@@ -1,16 +1,11 @@
 package com.wurmonline.server.behaviours;
 
 import com.wurmonline.server.creatures.Creature;
-import com.wurmonline.server.creatures.Creatures;
-import com.wurmonline.server.creatures.NoSuchCreatureException;
 import com.wurmonline.server.items.Item;
 import com.wurmonline.server.players.Player;
 import com.wurmonline.server.questions.BankerHireQuestion;
-import com.wurmonline.server.questions.BankerManageQuestion;
 import mod.wurmunlimited.npcs.banker.BankerMod;
-import mod.wurmunlimited.npcs.banker.BankerTemplate;
 import org.gotti.wurmunlimited.modsupport.actions.*;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;

@@ -14,23 +14,12 @@ public abstract class BankerQuestionExtension extends Question {
         return val != null && val.equals("true");
     }
 
-    boolean wasAnswered(String id, String desiredValue) {
+    boolean wasAnswered(@SuppressWarnings("SameParameterValue") String id, String desiredValue) {
         Properties answers = getAnswer();
         if (answers == null)
             return false;
         String val = answers.getProperty(id);
         return val != null && val.equals(desiredValue);
-    }
-
-    String getStringOrEmpty(String id) {
-        Properties answers = getAnswer();
-        if (answers == null)
-            return "";
-        String f = answers.getProperty(id);
-        if (f != null) {
-            return f;
-        }
-        return "";
     }
 }
 

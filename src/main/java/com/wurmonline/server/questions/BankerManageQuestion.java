@@ -4,8 +4,6 @@ import com.wurmonline.server.Server;
 import com.wurmonline.server.creatures.Creature;
 import com.wurmonline.server.items.Item;
 import com.wurmonline.server.players.Player;
-import com.wurmonline.server.zones.VolaTile;
-import com.wurmonline.shared.util.StringUtilities;
 import mod.wurmunlimited.bml.BMLBuilder;
 import mod.wurmunlimited.npcs.banker.BankerDatabase;
 import mod.wurmunlimited.npcs.banker.BankerMod;
@@ -63,28 +61,6 @@ public class BankerManageQuestion extends BankerQuestionExtension {
             }
         }
 
-//        String name = StringUtilities.raiseFirstLetter(getStringProp("name"));
-//        if (name.isEmpty() || name.length() > 20 || QuestionParser.containsIllegalCharacters(name)) {
-//            if (banker.getSex() == 0) {
-//                name = QuestionParser.generateGuardMaleName();
-//                responder.getCommunicator().sendSafeServerMessage("The banker didn't like the name, so he chose a new one.");
-//            } else {
-//                name = QuestionParser.generateGuardFemaleName();
-//                responder.getCommunicator().sendSafeServerMessage("The banker didn't like the name, so she chose a new one.");
-//            }
-//        }
-//
-//        String fullName;
-//        String prefix = BankerMod.getNamePrefix();
-//        if (prefix.isEmpty())
-//            fullName = name;
-//        else
-//            fullName = prefix + "_" + name;
-//
-//        if (!banker.getName().equals(fullName)) {
-//            banker.setName(fullName);
-//        }
-
         if (faceString.isEmpty()) {
             try {
                 responder.getCommunicator().sendCustomizeFace(face, BankerMod.faceSetters.createIdFor(banker, responder));
@@ -107,8 +83,6 @@ public class BankerManageQuestion extends BankerQuestionExtension {
     public void sendQuestion() {
         String bml = new BMLBuilder(id)
                              .text("Manage Banker").bold()
-//                             .harray(b -> b.label("Name:").entry("name", getNameWithoutPrefix(), 20))
-//                             .text("Blank for a random name.").italic()
                              .text("Name: " + banker.getName())
                              .newLine()
                              .harray(b -> b.label("Face:").entry("face", Long.toString(banker.getFace()), BankerHireQuestion.faceMaxChars))
@@ -119,14 +93,4 @@ public class BankerManageQuestion extends BankerQuestionExtension {
 
         getResponder().getCommunicator().sendBml(400, 350, true, true, bml, 200, 200, 200, title);
     }
-
-//    private String getNameWithoutPrefix() {
-//        String name = banker.getName();
-//        String prefix = BankerMod.getNamePrefix() + "_";
-//        if (name.startsWith(prefix)) {
-//            name = name.substring(prefix.length());
-//        }
-//
-//        return name;
-//    }
 }
