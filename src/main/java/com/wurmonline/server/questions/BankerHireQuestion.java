@@ -136,7 +136,7 @@ public class BankerHireQuestion extends BankerQuestionExtension {
                              .text("Hire Banker").bold()
                              .text("Place a banker that will offer banking services.")
                              .newLine()
-                             .harray(b -> b.label("Name:").entry("name", getStringOrEmpty("name"), 20))
+                             .harray(b -> b.label("Name:").entry("name", getStringProp("name"), 20))
                              .text("Leave blank for a random name.").italic()
                              .newLine()
                              .harray(b -> b.label("Face:").entry("face", "", faceMaxChars))

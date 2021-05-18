@@ -3,3 +3,8 @@
 /build/
 /build/classes/java/main/
 /build/classes/java/test/
+/sqlite/
+/gradle/
+/.idea/
+/gradlew
+/gradlew.bat

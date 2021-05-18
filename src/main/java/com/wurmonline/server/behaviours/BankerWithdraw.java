@@ -7,7 +7,6 @@ import com.wurmonline.server.banks.Banks;
 import com.wurmonline.server.creatures.Creature;
 import com.wurmonline.server.items.Item;
 import com.wurmonline.server.questions.WithdrawMoneyQuestion;
-import com.wurmonline.server.villages.Village;
 import mod.wurmunlimited.npcs.banker.BankerMod;
 import mod.wurmunlimited.npcs.banker.BankerTemplate;
 import org.gotti.wurmunlimited.modsupport.actions.ActionEntryBuilder;
