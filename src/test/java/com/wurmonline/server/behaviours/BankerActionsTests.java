@@ -54,28 +54,15 @@ public class BankerActionsTests extends BankerTest {
     public void getBehavioursForGM() throws IOException {
         player.setPower((byte)2);
         List<ActionEntry> behaviours = actions.getBehavioursFor(player, banker);
-        assertEquals(3, behaviours.size(), behavioursToString(behaviours));
+        assertEquals(2, behaviours.size(), behavioursToString(behaviours));
         assertEquals("Bank", behaviours.get(0).getActionString());
-        assertEquals((short)-2, behaviours.get(0).getNumber());
+        assertEquals((short)-1, behaviours.get(0).getNumber());
         assertEquals("Open account", behaviours.get(1).getActionString());
-        assertEquals("Change face", behaviours.get(2).getActionString());
     }
 
     @Test
     public void getBehavioursForOwner() {
         Item writ = factory.createWritFor(player, banker);
-        List<ActionEntry> behaviours = actions.getBehavioursFor(player, writ, banker);
-        assertEquals(3, behaviours.size(), behavioursToString(behaviours));
-        assertEquals("Bank", behaviours.get(0).getActionString());
-        assertEquals((short)-2, behaviours.get(0).getNumber());
-        assertEquals("Open account", behaviours.get(1).getActionString());
-        assertEquals("Change face", behaviours.get(2).getActionString());
-    }
-
-    @Test
-    public void getBehavioursForAnotherWrit() {
-        Item writ = factory.createNewItem(BankerMod.getContractTemplateId());
-        player.getInventory().insertItem(writ);
         List<ActionEntry> behaviours = actions.getBehavioursFor(player, writ, banker);
         assertEquals(2, behaviours.size(), behavioursToString(behaviours));
         assertEquals("Bank", behaviours.get(0).getActionString());
@@ -100,13 +87,12 @@ public class BankerActionsTests extends BankerTest {
         player.setPower((byte)2);
         factory.createBankFor(player);
         List<ActionEntry> behaviours = actions.getBehavioursFor(player, banker);
-        assertEquals(5, behaviours.size(), behavioursToString(behaviours));
+        assertEquals(4, behaviours.size(), behavioursToString(behaviours));
         assertEquals("Bank", behaviours.get(0).getActionString());
-        assertEquals((short)-4, behaviours.get(0).getNumber());
+        assertEquals((short)-3, behaviours.get(0).getNumber());
         assertEquals("Manage", behaviours.get(1).getActionString());
         assertEquals("Withdraw money", behaviours.get(2).getActionString());
         assertEquals("Move account", behaviours.get(3).getActionString());
-        assertEquals("Change face", behaviours.get(4).getActionString());
     }
 
     @Test
@@ -114,13 +100,12 @@ public class BankerActionsTests extends BankerTest {
         Item writ = factory.createWritFor(player, banker);
         factory.createBankFor(player);
         List<ActionEntry> behaviours = actions.getBehavioursFor(player, writ, banker);
-        assertEquals(5, behaviours.size(), behavioursToString(behaviours));
+        assertEquals(4, behaviours.size(), behavioursToString(behaviours));
         assertEquals("Bank", behaviours.get(0).getActionString());
-        assertEquals((short)-4, behaviours.get(0).getNumber());
+        assertEquals((short)-3, behaviours.get(0).getNumber());
         assertEquals("Manage", behaviours.get(1).getActionString());
         assertEquals("Withdraw money", behaviours.get(2).getActionString());
         assertEquals("Move account", behaviours.get(3).getActionString());
-        assertEquals("Change face", behaviours.get(4).getActionString());
     }
 
     @Test

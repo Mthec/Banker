@@ -211,9 +211,9 @@ public class BankerMod implements WurmServerMod, Configurable, Initable, PreInit
         ModActions.registerAction(new BankerManageAccount());
         ModActions.registerAction(new BankerWithdraw());
         ModActions.registerAction(new BankerMoveAccount());
-        ModActions.registerAction(new BankerChangeFace());
         ModActions.registerAction(new BankerHire());
         ModActions.registerAction(new BankerManage());
+        ModActions.registerAction(new BankerChangeFace());
         ModActions.registerAction(new BankerGive());
 
         BankerDatabase.loadFaces();

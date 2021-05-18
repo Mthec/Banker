@@ -23,9 +23,9 @@ public abstract class BankerTest {
     protected static BankerManageAccount manageAccount;
     protected static BankerWithdraw withdraw;
     protected static BankerMoveAccount move;
-    protected static BankerChangeFace changeFace;
     protected static BankerHire hire;
     protected static BankerManage manage;
+    protected static BankerChangeFace changeFace;
     protected static BankerGive give;
     protected Player player;
     protected Creature banker;
@@ -60,9 +60,9 @@ public abstract class BankerTest {
             manageAccount = new BankerManageAccount();
             withdraw = new BankerWithdraw();
             move = new BankerMoveAccount();
-            changeFace = new BankerChangeFace();
             hire = new BankerHire();
             manage = new BankerManage();
+            changeFace = new BankerChangeFace();
             give = new BankerGive();
             actionsSet = true;
         }

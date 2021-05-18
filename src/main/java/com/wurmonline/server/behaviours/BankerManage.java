@@ -11,34 +11,37 @@ import mod.wurmunlimited.npcs.banker.BankerTemplate;
 import org.gotti.wurmunlimited.modsupport.actions.*;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class BankerManage implements ModAction, ActionPerformer, BehaviourProvider {
     private final short actionId;
-    private final List<ActionEntry> manageEntry;
+    static final List<ActionEntry> entries = new ArrayList<>();
     private final List<ActionEntry> empty = Collections.emptyList();
 
     public BankerManage() {
         actionId = (short)ModActions.getNextActionId();
         ActionEntry actionEntry = new ActionEntryBuilder(actionId, "Manage", "managing").build();
         ModActions.registerAction(actionEntry);
-        manageEntry = Collections.singletonList(actionEntry);
+        entries.clear();
+        entries.add(new ActionEntryBuilder((short)-2, "Manage", "managing").build());
+        entries.add(actionEntry);
     }
 
-    private boolean writValid(Creature performer, Creature banker, @Nullable Item writ) {
+    private static boolean writValid(Creature performer, Creature banker, @Nullable Item writ) {
         return writ != null && writ.getTemplateId() == BankerMod.getContractTemplateId() &&
                performer.getInventory().getItems().contains(writ) && writ.getData() == banker.getWurmId();
     }
 
-    private boolean canManage(Creature performer, Creature banker, @Nullable Item writ) {
+    static boolean canManage(Creature performer, Creature banker, @Nullable Item writ) {
         return performer.isPlayer() && BankerTemplate.is(banker) &&
               (performer.getPower() >= 2 || writValid(performer, banker, writ));
     }
 
     private List<ActionEntry> getBehaviours(Creature performer, Creature banker, @Nullable Item writ) {
         if (canManage(performer, banker, writ)) {
-            return manageEntry;
+            return entries;
         }
 
         return empty;
