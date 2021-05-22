@@ -44,6 +44,7 @@ public class BankerMod implements WurmServerMod, Configurable, Initable, PreInit
     private static final Logger logger = Logger.getLogger(BankerMod.class.getName());
     public static final FaceSetters faceSetters = new FaceSetters();
     public static final Set<Integer> withdrawals = new HashSet<>();
+    public static final int maxNameLength = 20;
     private boolean updateTraders = false;
     private boolean contractsOnTraders = false;
     private static VillageOptions villageOption = VillageOptions.VILLAGE;

@@ -1,13 +1,9 @@
 package mod.wurmunlimited.npcs.banker;
 
 import com.wurmonline.server.creatures.Creature;
-import com.wurmonline.server.creatures.CreatureStatus;
-import com.wurmonline.server.economy.FakeShop;
 import com.wurmonline.server.items.Item;
 import com.wurmonline.server.zones.VolaTile;
-import com.wurmonline.server.zones.Zones;
 import mod.wurmunlimited.WurmObjectsFactory;
-import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -41,8 +37,6 @@ public class BankerObjectsFactory extends WurmObjectsFactory {
 
     public Properties defaultProperties() {
         Properties defaultProperties = new Properties();
-        defaultProperties.setProperty("bribery_cost", "0");
-        defaultProperties.setProperty("contract_price", "10000");
         defaultProperties.setProperty("name_prefix", "Banker");
         return defaultProperties;
     }

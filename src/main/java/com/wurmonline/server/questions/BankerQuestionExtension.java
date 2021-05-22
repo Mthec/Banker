@@ -1,6 +1,7 @@
 package com.wurmonline.server.questions;
 
 import com.wurmonline.server.creatures.Creature;
+import mod.wurmunlimited.npcs.banker.BankerMod;
 
 import java.util.Properties;
 
@@ -20,6 +21,24 @@ public abstract class BankerQuestionExtension extends Question {
             return false;
         String val = answers.getProperty(id);
         return val != null && val.equals(desiredValue);
+    }
+
+    String getPrefix() {
+        String prefix = BankerMod.getNamePrefix();
+        if (prefix.isEmpty()) {
+            return "";
+        } else {
+            return prefix + "_";
+        }
+    }
+
+    String getNameWithoutPrefix(String name) {
+        String prefix = BankerMod.getNamePrefix();
+        if (prefix.isEmpty() || name.length() < prefix.length() + 1) {
+            return name;
+        } else {
+            return name.substring(prefix.length() + 1);
+        }
     }
 }
 

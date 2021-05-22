@@ -4,13 +4,17 @@ import com.wurmonline.server.Server;
 import com.wurmonline.server.creatures.Creature;
 import com.wurmonline.server.items.Item;
 import com.wurmonline.server.players.Player;
+import com.wurmonline.shared.util.StringUtilities;
 import mod.wurmunlimited.bml.BMLBuilder;
 import mod.wurmunlimited.npcs.banker.BankerDatabase;
 import mod.wurmunlimited.npcs.banker.BankerMod;
 import mod.wurmunlimited.npcs.banker.FaceSetters;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Properties;
+
+import static com.wurmonline.server.creatures.CreaturePackageCaller.saveCreatureName;
 
 public class BankerManageQuestion extends BankerQuestionExtension {
     private final Player responder;
@@ -48,6 +52,24 @@ public class BankerManageQuestion extends BankerQuestionExtension {
             return;
         }
 
+        String name = getStringProp("name");
+        if (name != null && !name.isEmpty()) {
+            String fullName = getPrefix() + StringUtilities.raiseFirstLetter(name);
+            if (QuestionParser.containsIllegalCharacters(name)) {
+                responder.getCommunicator().sendNormalServerMessage("The banker didn't like that name, so they shall remain " + banker.getName() + ".");
+            } else if (!fullName.equals(banker.getName())) {
+                try {
+                    saveCreatureName(banker, fullName);
+                    banker.refreshVisible();
+                    responder.getCommunicator().sendNormalServerMessage("The banker will now be known as " + banker.getName() + ".");
+                } catch (IOException e) {
+                    logger.warning("Failed to set name (" + fullName + ") for creature (" + banker.getWurmId() + ").");
+                    responder.getCommunicator().sendNormalServerMessage("The banker looks confused, what exactly is a database?");
+                    e.printStackTrace();
+                }
+            }
+        }
+
         String faceString = getStringProp("face");
         long face;
         if (faceString.isEmpty()) {
@@ -83,7 +105,7 @@ public class BankerManageQuestion extends BankerQuestionExtension {
     public void sendQuestion() {
         String bml = new BMLBuilder(id)
                              .text("Manage Banker").bold()
-                             .text("Name: " + banker.getName())
+                             .harray(b -> b.label("Name: " + getPrefix()).entry("name", getNameWithoutPrefix(banker.getName()), BankerMod.maxNameLength))
                              .newLine()
                              .harray(b -> b.label("Face:").entry("face", Long.toString(banker.getFace()), BankerHireQuestion.faceMaxChars))
                              .text("Blank to create a face on the next screen, or paste a face code here.").italic()
