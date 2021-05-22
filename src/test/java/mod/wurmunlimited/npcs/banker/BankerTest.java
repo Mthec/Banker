@@ -18,7 +18,7 @@ import java.util.Map;
 
 public abstract class BankerTest {
     protected BankerObjectsFactory factory;
-    private static boolean actionsSet = false;
+    private static boolean init = false;
     protected static BankerActions actions;
     protected static BankerManageAccount manageAccount;
     protected static BankerWithdraw withdraw;
@@ -27,6 +27,7 @@ public abstract class BankerTest {
     protected static BankerManage manage;
     protected static BankerChangeFace changeFace;
     protected static BankerGive give;
+    protected static PlaceNpcMenu menu;
     protected Player player;
     protected Creature banker;
 
@@ -54,7 +55,7 @@ public abstract class BankerTest {
 
         factory = new BankerObjectsFactory();
 
-        if (!actionsSet) {
+        if (!init) {
             ActionEntryBuilder.init();
             actions = new BankerActions();
             manageAccount = new BankerManageAccount();
@@ -64,7 +65,9 @@ public abstract class BankerTest {
             manage = new BankerManage();
             changeFace = new BankerChangeFace();
             give = new BankerGive();
-            actionsSet = true;
+            new PlaceBankerAction();
+            menu = PlaceNpcMenu.registerAction();
+            init = true;
         }
 
         //noinspection unchecked
