@@ -61,8 +61,7 @@ public class BankerManageQuestionTests extends BankerTest {
 
     private Long getFace() {
         try {
-            //noinspection unchecked
-            return ((Map<Creature, Long>)ReflectionUtil.getPrivateField(null, BankerDatabase.class.getDeclaredField("faces"))).get(banker);
+            return ReflectionUtil.<Map<Creature, Long>>getPrivateField(null, BankerDatabase.class.getDeclaredField("faces")).get(banker);
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }

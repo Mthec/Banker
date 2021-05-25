@@ -307,8 +307,7 @@ public class BankerModTests extends BankerTest {
 
         assertNull(handler.invoke(player.getCommunicator(), method, args));
         assertNotEquals(face, BankerDatabase.getFaceFor(banker));
-        verify(buffer, never()).reset();
-        assertThat(player, receivedMessageContaining("returns"));
+        verify(buffer, times(1)).reset();
         assertThat(player, didNotReceiveMessageContaining("a new form"));
     }
 

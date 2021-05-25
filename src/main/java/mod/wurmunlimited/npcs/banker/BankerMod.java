@@ -357,21 +357,25 @@ public class BankerMod implements WurmServerMod, Configurable, Initable, PreInit
             if (player != null) {
                 Creature banker = faceSetters.retrieveBankerOrNull(player, itemId);
 
-                if (banker != null && BankerDatabase.isDifferentFace(face, banker)) {
-                    try {
-                        BankerDatabase.setFaceFor(banker, face);
-                        BankerDatabase.resetPlayerFace(player);
-                        player.getCommunicator().sendNormalServerMessage("The banker's face seems to shift about and takes a new form.");
-                    } catch (SQLException e) {
-                        logger.warning("Failed to set " + banker.getName() + "'s face.");
-                        e.printStackTrace();
-                        player.getCommunicator().sendNormalServerMessage("The banker's face seems to shift about, but then returns as it was.");
-                    }
-                } else {
-                    player.getCommunicator().sendNormalServerMessage("The banker's face seems to shift about, but then returns as it was.");
-                }
+                if (banker != null) {
+                    if (BankerTemplate.is(banker)) {
+                        if (BankerDatabase.isDifferentFace(face, banker)) {
+                            try {
+                                BankerDatabase.setFaceFor(banker, face);
+                                BankerDatabase.resetPlayerFace(player);
+                                player.getCommunicator().sendNormalServerMessage("The banker's face seems to shift about and takes a new form.");
+                            } catch (SQLException e) {
+                                logger.warning("Failed to set " + banker.getName() + "'s face.");
+                                e.printStackTrace();
+                                player.getCommunicator().sendNormalServerMessage("The banker's face seems to shift about, but then returns as it was.");
+                            }
+                        } else {
+                            player.getCommunicator().sendNormalServerMessage("The banker's face seems to shift about, but then returns as it was.");
+                        }
 
-                return null;
+                        return null;
+                    }
+                }
             } else {
                 logger.warning("Why is player null?  This should never happen.");
             }
