@@ -5,6 +5,7 @@ import com.wurmonline.server.banks.BankUnavailableException;
 import com.wurmonline.server.banks.Banks;
 import com.wurmonline.server.economy.MonetaryConstants;
 import com.wurmonline.server.villages.Village;
+import mod.wurmunlimited.WurmObjectsFactory;
 import mod.wurmunlimited.npcs.banker.BankerMod;
 import mod.wurmunlimited.npcs.banker.BankerTest;
 import org.junit.jupiter.api.Test;
@@ -31,7 +32,7 @@ public class BankerManageAccountQuestionAnswerTests extends BankerTest {
     private Village createPermanentVillage() {
         Village village = factory.createVillageFor(factory.createNewPlayer());
         try {
-            factory.setFinalField(village, Village.class.getDeclaredField("isPermanent"), true);
+            WurmObjectsFactory.setFinalField(village, Village.class.getDeclaredField("isPermanent"), true);
         } catch (NoSuchFieldException e) {
             throw new RuntimeException(e);
         }
