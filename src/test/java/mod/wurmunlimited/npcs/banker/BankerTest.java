@@ -66,7 +66,7 @@ public abstract class BankerTest {
             changeFace = new BankerChangeFace();
             give = new BankerGive();
             new PlaceBankerAction();
-            menu = PlaceNpcMenu.registerAction();
+            menu = PlaceNpcMenu.register();
             init = true;
         }
 

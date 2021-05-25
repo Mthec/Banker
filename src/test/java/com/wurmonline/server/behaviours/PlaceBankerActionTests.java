@@ -35,7 +35,7 @@ public class PlaceBankerActionTests extends BankerTest {
         super.setUp();
         action = mock(Action.class);
         when(action.getActionString()).thenAnswer(i -> actionString);
-        actionId = menu.getActionId();
+        actionId = ReflectionUtil.<List<ActionEntry>>getPrivateField(null, PlaceNpcMenu.class.getDeclaredField("actionEntries")).get(1).getNumber();
         gm = factory.createNewPlayer();
         gm.setPower((byte)2);
         wand = factory.createNewItem(ItemList.wandGM);

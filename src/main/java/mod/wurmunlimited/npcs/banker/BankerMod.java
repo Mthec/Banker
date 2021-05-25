@@ -47,6 +47,7 @@ public class BankerMod implements WurmServerMod, Configurable, Initable, PreInit
     public static final int maxNameLength = 20;
     private boolean updateTraders = false;
     private boolean contractsOnTraders = false;
+    public static byte gmManagePowerRequired = 2;
     private static VillageOptions villageOption = VillageOptions.VILLAGE;
     private static boolean allowGuestAccounts = false;
     private static long briberyCost = 0;
@@ -86,6 +87,17 @@ public class BankerMod implements WurmServerMod, Configurable, Initable, PreInit
     public void configure(Properties properties) {
         updateTraders = properties.getOrDefault("update_traders", "false").equals("true");
         contractsOnTraders = properties.getOrDefault("contracts_on_traders", "false").equals("true");
+        try {
+            String gmPower = properties.getProperty("gm_manage_power_required");
+            if (gmPower != null && !gmPower.isEmpty()) {
+                gmManagePowerRequired = Byte.parseByte(gmPower);
+                if (gmManagePowerRequired < 1)
+                    throw new NumberFormatException();
+            }
+        } catch (NumberFormatException e) {
+            logger.warning("Invalid value for gm_manage_power_required, setting default (2).");
+            gmManagePowerRequired = 2;
+        }
         switch ((String)properties.getOrDefault("village_option", "village")) {
             case "starter":
                 villageOption = VillageOptions.STARTER;
@@ -108,6 +120,8 @@ public class BankerMod implements WurmServerMod, Configurable, Initable, PreInit
                 briberyCost = Long.parseLong(briberyString);
                 if (briberyCost < 0)
                     throw new NumberFormatException();
+            } else {
+                briberyCost = 0;
             }
         } catch (NumberFormatException e) {
             logger.warning("Invalid value for bribery_cost, setting default (0).");
@@ -122,6 +136,8 @@ public class BankerMod implements WurmServerMod, Configurable, Initable, PreInit
                 contractPrice = Integer.parseInt(contractPriceString);
                 if (contractPrice <= 0)
                     throw new NumberFormatException();
+            } else {
+                contractPrice = MonetaryConstants.COIN_SILVER;
             }
         } catch (NumberFormatException e) {
             logger.warning("Invalid value for contract_price, setting default (1s).");
@@ -216,7 +232,7 @@ public class BankerMod implements WurmServerMod, Configurable, Initable, PreInit
         ModActions.registerAction(new BankerManage());
         ModActions.registerAction(new BankerChangeFace());
         ModActions.registerAction(new BankerGive());
-        PlaceNpcMenu.registerAction();
+        PlaceNpcMenu.register();
         new PlaceBankerAction();
 
         BankerDatabase.loadFaces();

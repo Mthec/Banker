@@ -14,7 +14,8 @@ import java.util.List;
 
 import static mod.wurmunlimited.Assert.bmlEqual;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 public class BankerManageTests extends BankerTest {
@@ -26,6 +27,7 @@ public class BankerManageTests extends BankerTest {
         super.setUp();
         gm = factory.createNewPlayer();
         gm.setPower((byte)2);
+        BankerMod.gmManagePowerRequired = 2;
     }
 
     // getBehavioursFor
@@ -117,6 +119,18 @@ public class BankerManageTests extends BankerTest {
         assertTrue(isEmpty(manage.getBehavioursFor(player, factory.createNewItem(BankerMod.getContractTemplateId()), writ)));
     }
 
+    @Test
+    public void testGetBehavioursForGmManagePower() {
+        BankerMod.gmManagePowerRequired = 2;
+        assertTrue(isBehaviour(manage.getBehavioursFor(gm, banker)));
+    }
+
+    @Test
+    public void testGetBehavioursForGmManagePowerTooHigh() {
+        BankerMod.gmManagePowerRequired = 10;
+        assertTrue(isEmpty(manage.getBehavioursFor(gm, banker)));
+    }
+
     // action
 
     private void sendQuestion() {
@@ -128,7 +142,7 @@ public class BankerManageTests extends BankerTest {
     public void testAction() {
         Action action = mock(Action.class);
         assertTrue(manage.action(action, gm, banker, manage.getActionId(), 0));
-        assertFalse(manage.action(action, player, banker, manage.getActionId(), 0));
+        assertTrue(manage.action(action, player, banker, manage.getActionId(), 0));
 
         assertEquals(1, factory.getCommunicator(gm).getBml().length);
         assertEquals(0, factory.getCommunicator(player).getBml().length);
@@ -139,9 +153,9 @@ public class BankerManageTests extends BankerTest {
     @Test
     public void testActionItem() {
         Action action = mock(Action.class);
-        Item writ = factory.createWritFor(player, player);
-        assertTrue(manage.action(action, gm, factory.createWritFor(gm, player), banker, manage.getActionId(), 0));
-        assertFalse(manage.action(action, player, writ, banker, manage.getActionId(), 0));
+        Item item = factory.createNewItem(BankerMod.getContractTemplateId());
+        assertTrue(manage.action(action, gm, factory.createWritFor(gm, banker), banker, manage.getActionId(), 0));
+        assertTrue(manage.action(action, player, item, banker, manage.getActionId(), 0));
 
         assertEquals(1, factory.getCommunicator(gm).getBml().length);
         assertEquals(0, factory.getCommunicator(player).getBml().length);
@@ -156,7 +170,7 @@ public class BankerManageTests extends BankerTest {
         Item writ = factory.createWritFor(player, banker);
         assertTrue(manage.action(action, gm, factory.createWritFor(gm, banker), manage.getActionId(), 0));
         assertTrue(manage.action(action, player, writ, manage.getActionId(), 0));
-        assertFalse(manage.action(action, notOwner, writ, manage.getActionId(), 0));
+        assertTrue(manage.action(action, notOwner, writ, manage.getActionId(), 0));
 
         assertEquals(1, factory.getCommunicator(gm).getBml().length);
         assertEquals(1, factory.getCommunicator(player).getBml().length);
@@ -174,7 +188,7 @@ public class BankerManageTests extends BankerTest {
         Item writ = factory.createWritFor(player, banker);
         assertTrue(manage.action(action, gm, item, factory.createWritFor(gm, banker), manage.getActionId(), 0));
         assertTrue(manage.action(action, player, item, writ, manage.getActionId(), 0));
-        assertFalse(manage.action(action, notOwner, item, writ, manage.getActionId(), 0));
+        assertTrue(manage.action(action, notOwner, item, writ, manage.getActionId(), 0));
 
         assertEquals(1, factory.getCommunicator(gm).getBml().length);
         assertEquals(1, factory.getCommunicator(player).getBml().length);
@@ -190,8 +204,8 @@ public class BankerManageTests extends BankerTest {
         Player notOwner = factory.createNewPlayer();
         Item notWrit = factory.createWritFor(factory.createNewPlayer(), banker);
         assertTrue(manage.action(action, gm, notWrit, manage.getActionId(), 0));
-        assertFalse(manage.action(action, player, notWrit, manage.getActionId(), 0));
-        assertFalse(manage.action(action, notOwner, notWrit, manage.getActionId(), 0));
+        assertTrue(manage.action(action, player, notWrit, manage.getActionId(), 0));
+        assertTrue(manage.action(action, notOwner, notWrit, manage.getActionId(), 0));
 
         assertEquals(1, factory.getCommunicator(gm).getBml().length);
         assertEquals(0, factory.getCommunicator(player).getBml().length);
@@ -207,8 +221,8 @@ public class BankerManageTests extends BankerTest {
         Item item = factory.createNewItem(BankerMod.getContractTemplateId());
         Item notWrit = factory.createWritFor(factory.createNewPlayer(), banker);
         assertTrue(manage.action(action, gm, item, factory.createWritFor(gm, banker), manage.getActionId(), 0));
-        assertFalse(manage.action(action, player, item, notWrit, manage.getActionId(), 0));
-        assertFalse(manage.action(action, notOwner, item, notWrit, manage.getActionId(), 0));
+        assertTrue(manage.action(action, player, item, notWrit, manage.getActionId(), 0));
+        assertTrue(manage.action(action, notOwner, item, notWrit, manage.getActionId(), 0));
 
         assertEquals(1, factory.getCommunicator(gm).getBml().length);
         assertEquals(0, factory.getCommunicator(player).getBml().length);
@@ -222,10 +236,10 @@ public class BankerManageTests extends BankerTest {
         Action action = mock(Action.class);
         Creature notBanker = factory.createNewCreature();
         Item writ = factory.createWritFor(player, notBanker);
-        assertFalse(manage.action(action, gm, notBanker, manage.getActionId(), 0));
-        assertFalse(manage.action(action, player, notBanker, manage.getActionId(), 0));
-        assertFalse(manage.action(action, gm, writ, notBanker, manage.getActionId(), 0));
-        assertFalse(manage.action(action, player, writ, notBanker, manage.getActionId(), 0));
+        assertTrue(manage.action(action, gm, notBanker, manage.getActionId(), 0));
+        assertTrue(manage.action(action, player, notBanker, manage.getActionId(), 0));
+        assertTrue(manage.action(action, gm, writ, notBanker, manage.getActionId(), 0));
+        assertTrue(manage.action(action, player, writ, notBanker, manage.getActionId(), 0));
 
         assertEquals(0, factory.getCommunicator(gm).getBml().length);
         assertEquals(0, factory.getCommunicator(player).getBml().length);
@@ -237,10 +251,10 @@ public class BankerManageTests extends BankerTest {
         Item writ = factory.createWritFor(player, banker);
         writ.setData(Long.MAX_VALUE);
         Item randomItem = factory.createNewItem();
-        assertFalse(manage.action(action, gm, writ, manage.getActionId(), 0));
-        assertFalse(manage.action(action, player, writ, manage.getActionId(), 0));
-        assertFalse(manage.action(action, gm, randomItem, writ, manage.getActionId(), 0));
-        assertFalse(manage.action(action, player, randomItem, writ, manage.getActionId(), 0));
+        assertTrue(manage.action(action, gm, writ, manage.getActionId(), 0));
+        assertTrue(manage.action(action, player, writ, manage.getActionId(), 0));
+        assertTrue(manage.action(action, gm, randomItem, writ, manage.getActionId(), 0));
+        assertTrue(manage.action(action, player, randomItem, writ, manage.getActionId(), 0));
 
         assertEquals(0, factory.getCommunicator(gm).getBml().length);
         assertEquals(0, factory.getCommunicator(player).getBml().length);
@@ -251,8 +265,8 @@ public class BankerManageTests extends BankerTest {
         Action action = mock(Action.class);
         Item writ = factory.createWritFor(player, banker);
         ItemsPackageFactory.removeItem(player, writ);
-        assertFalse(manage.action(action, player, writ, manage.getActionId(), 0));
-        assertFalse(manage.action(action, player, factory.createNewItem(BankerMod.getContractTemplateId()), writ, manage.getActionId(), 0));
+        assertTrue(manage.action(action, player, writ, manage.getActionId(), 0));
+        assertTrue(manage.action(action, player, factory.createNewItem(BankerMod.getContractTemplateId()), writ, manage.getActionId(), 0));
 
         assertEquals(0, factory.getCommunicator(gm).getBml().length);
         assertEquals(0, factory.getCommunicator(player).getBml().length);
@@ -261,10 +275,30 @@ public class BankerManageTests extends BankerTest {
     @Test
     public void testActionWrongActionId() {
         Action action = mock(Action.class);
-        assertFalse(manage.action(action, gm, banker, (short)(manage.getActionId() + 1), 0));
-        assertFalse(manage.action(action, player, factory.createWritFor(player, banker), (short)(manage.getActionId() + 1), 0));
+        assertTrue(manage.action(action, gm, banker, (short)(manage.getActionId() + 1), 0));
+        assertTrue(manage.action(action, player, factory.createWritFor(player, banker), (short)(manage.getActionId() + 1), 0));
 
         assertEquals(0, factory.getCommunicator(gm).getBml().length);
         assertEquals(0, factory.getCommunicator(player).getBml().length);
+    }
+
+    @Test
+    public void testActionGmPowerRequired() {
+        BankerMod.gmManagePowerRequired = 2;
+        Action action = mock(Action.class);
+        assertTrue(manage.action(action, gm, banker, manage.getActionId(), 0));
+
+        assertEquals(1, factory.getCommunicator(gm).getBml().length);
+        sendQuestion();
+        assertThat(gm, bmlEqual());
+    }
+
+    @Test
+    public void testActionGmPowerRequiredTooHigh() {
+        BankerMod.gmManagePowerRequired = 10;
+        Action action = mock(Action.class);
+        assertTrue(manage.action(action, gm, banker, manage.getActionId(), 0));
+
+        assertEquals(0, factory.getCommunicator(gm).getBml().length);
     }
 }

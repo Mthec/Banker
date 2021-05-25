@@ -3,7 +3,7 @@ plugins {
 }
 
 group = "mod.wurmunlimited.npcs.banker"
-version = "0.1"
+version = "0.2"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 val shortName = "banker"
 val wurmServerFolder = "E:/Steam/steamapps/common/Wurm Unlimited/WurmServerLauncher/"
@@ -42,6 +42,7 @@ tasks {
         }
 
         from(configurations.runtimeClasspath.get().filter { it.name.startsWith("BMLBuilder") && it.name.endsWith("jar") }.map { zipTree(it) })
+        from(configurations.runtimeClasspath.get().filter { it.name.startsWith("PlaceNpc") && it.name.endsWith("jar") }.map { zipTree(it) })
 
         includeEmptyDirs = false
         archiveFileName.set("$shortName.jar")

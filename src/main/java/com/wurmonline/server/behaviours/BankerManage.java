@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static mod.wurmunlimited.npcs.banker.BankerMod.gmManagePowerRequired;
+
 public class BankerManage implements ModAction, ActionPerformer, BehaviourProvider {
     private final short actionId;
     static final List<ActionEntry> entries = new ArrayList<>();
@@ -36,7 +38,7 @@ public class BankerManage implements ModAction, ActionPerformer, BehaviourProvid
 
     static boolean canManage(Creature performer, Creature banker, @Nullable Item writ) {
         return performer.isPlayer() && BankerTemplate.is(banker) &&
-              (performer.getPower() >= 2 || writValid(performer, banker, writ));
+              (performer.getPower() >= gmManagePowerRequired || writValid(performer, banker, writ));
     }
 
     private List<ActionEntry> getBehaviours(Creature performer, Creature banker, @Nullable Item writ) {
@@ -78,7 +80,7 @@ public class BankerManage implements ModAction, ActionPerformer, BehaviourProvid
             return true;
         }
 
-        return false;
+        return true;
     }
 
     @Override
@@ -87,7 +89,7 @@ public class BankerManage implements ModAction, ActionPerformer, BehaviourProvid
             return action(performer, target, source);
         }
 
-        return false;
+        return true;
     }
 
     @Override
@@ -96,7 +98,7 @@ public class BankerManage implements ModAction, ActionPerformer, BehaviourProvid
             return action(performer, target, null);
         }
 
-        return false;
+        return true;
     }
 
     @Override
@@ -113,7 +115,7 @@ public class BankerManage implements ModAction, ActionPerformer, BehaviourProvid
             } catch (NoSuchCreatureException ignored) {}
         }
 
-        return false;
+        return true;
     }
 
     @Override
