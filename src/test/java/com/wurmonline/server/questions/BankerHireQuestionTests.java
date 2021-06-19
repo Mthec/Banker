@@ -7,7 +7,6 @@ import com.wurmonline.server.structures.Structure;
 import com.wurmonline.server.zones.NoSuchZoneException;
 import com.wurmonline.server.zones.VolaTile;
 import com.wurmonline.server.zones.Zones;
-import mod.wurmunlimited.npcs.banker.BankerDatabase;
 import mod.wurmunlimited.npcs.banker.BankerMod;
 import mod.wurmunlimited.npcs.banker.BankerTemplate;
 import mod.wurmunlimited.npcs.banker.BankerTest;
@@ -177,7 +176,7 @@ public class BankerHireQuestionTests extends BankerTest {
         assertEquals(1, factory.getAllCreatures().size());
         Creature banker = factory.getAllCreatures().iterator().next();
         assertTrue(BankerTemplate.is(banker));
-        assertEquals(face, BankerDatabase.getFaceFor(banker));
+        assertEquals(face, BankerMod.mod.getFaceFor(banker));
         assertNull(factory.getCommunicator(player).sendCustomizeFace);
     }
 

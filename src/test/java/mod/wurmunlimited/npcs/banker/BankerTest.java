@@ -4,9 +4,7 @@ import com.wurmonline.server.Constants;
 import com.wurmonline.server.behaviours.*;
 import com.wurmonline.server.creatures.Creature;
 import com.wurmonline.server.players.Player;
-import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 import org.gotti.wurmunlimited.modsupport.actions.ActionEntryBuilder;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -14,7 +12,6 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Map;
 
 public abstract class BankerTest {
     protected BankerObjectsFactory factory;
@@ -70,31 +67,13 @@ public abstract class BankerTest {
             init = true;
         }
 
-        //noinspection unchecked
-        ((Map<Object, Object>)ReflectionUtil.getPrivateField(null, BankerDatabase.class.getDeclaredField("faces"))).clear();
-        ReflectionUtil.setPrivateField(null, BankerDatabase.class.getDeclaredField("tempFace"), null);
         player = factory.createNewPlayer();
         banker = factory.createNewBanker();
-
-        reset();
-    }
-
-    @AfterEach
-    void tearDown() {
-        cleanUp();
-    }
-
-    private static void cleanUp() {
-        try {
-            ReflectionUtil.setPrivateField(null, BankerDatabase.class.getDeclaredField("created"), false);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        banker.setKingdomId(player.getKingdomId());
     }
 
     @BeforeAll
     static void reset() {
-        cleanUp();
         Constants.dbHost = ".";
     }
 }

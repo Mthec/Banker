@@ -2,19 +2,17 @@ package com.wurmonline.server.behaviours;
 
 import com.wurmonline.server.banks.Bank;
 import com.wurmonline.server.banks.BankUnavailableException;
-import com.wurmonline.server.banks.Banks;
 import com.wurmonline.server.creatures.Creature;
 import com.wurmonline.server.creatures.FakeCommunicator;
-import com.wurmonline.server.players.Player;
 import com.wurmonline.server.questions.BankerManageAccountQuestion;
 import mod.wurmunlimited.npcs.banker.BankerTest;
 import org.junit.jupiter.api.Test;
-import org.mockito.stubbing.Answer;
 
-import static mod.wurmunlimited.Assert.*;
+import static mod.wurmunlimited.Assert.bmlEqual;
+import static mod.wurmunlimited.Assert.receivedMessageContaining;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
 
 public class BankerManageAccountTests extends BankerTest {
     @Test
@@ -67,8 +65,8 @@ public class BankerManageAccountTests extends BankerTest {
 
     @Test
     public void actionNoBankDifferentKingdom() {
-        assert player.getKingdomId() == 0;
         banker.getStatus().kingdom = (byte)1;
+        assert player.getKingdomId() != banker.getStatus().kingdom;
 
         assertTrue(manageAccount.action(mock(Action.class), player, banker, manageAccount.getActionId(), 0));
 

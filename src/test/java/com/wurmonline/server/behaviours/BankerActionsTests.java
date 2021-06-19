@@ -150,8 +150,8 @@ public class BankerActionsTests extends BankerTest {
 
     @Test
     public void actionNoBankDifferentKingdom() {
-        assert player.getKingdomId() == 0;
         banker.getStatus().kingdom = (byte)1;
+        assert player.getKingdomId() != banker.getStatus().kingdom;
 
         assertTrue(actions.action(mock(Action.class), player, banker, actions.getActionId(), 0));
 

@@ -13,7 +13,7 @@ import java.util.Objects;
 import static mod.wurmunlimited.Assert.receivedMessageContaining;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
 
 public class BankerChangeFaceTests extends BankerTest {
     @Test
@@ -24,7 +24,7 @@ public class BankerChangeFaceTests extends BankerTest {
         FakeCommunicator.CustomizeFace customize = factory.getCommunicator(player).sendCustomizeFace;
         assertNotNull(customize);
         assertEquals(banker.getFace(), customize.face);
-        assertEquals(banker, Objects.requireNonNull(BankerMod.faceSetters.retrieveBankerOrNull(player, customize.itemId)));
+        assertEquals(banker, Objects.requireNonNull(BankerMod.faceSetters.retrieveCreatureOrNull(player, customize.itemId)));
     }
 
     @Test
@@ -35,7 +35,7 @@ public class BankerChangeFaceTests extends BankerTest {
         FakeCommunicator.CustomizeFace customize = factory.getCommunicator(player).sendCustomizeFace;
         assertNotNull(customize);
         assertEquals(banker.getFace(), customize.face);
-        assertEquals(banker, Objects.requireNonNull(BankerMod.faceSetters.retrieveBankerOrNull(player, customize.itemId)));
+        assertEquals(banker, Objects.requireNonNull(BankerMod.faceSetters.retrieveCreatureOrNull(player, customize.itemId)));
     }
 
     @Test

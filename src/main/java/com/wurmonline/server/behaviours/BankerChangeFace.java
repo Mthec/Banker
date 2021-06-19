@@ -3,9 +3,9 @@ package com.wurmonline.server.behaviours;
 import com.wurmonline.server.creatures.Creature;
 import com.wurmonline.server.items.Item;
 import com.wurmonline.server.players.Player;
+import mod.wurmunlimited.npcs.FaceSetter;
 import mod.wurmunlimited.npcs.banker.BankerMod;
 import mod.wurmunlimited.npcs.banker.BankerTemplate;
-import mod.wurmunlimited.npcs.banker.FaceSetters;
 import org.gotti.wurmunlimited.modsupport.actions.ActionEntryBuilder;
 import org.gotti.wurmunlimited.modsupport.actions.ActionPerformer;
 import org.gotti.wurmunlimited.modsupport.actions.ModAction;
@@ -41,7 +41,7 @@ public class BankerChangeFace implements ModAction, ActionPerformer {
             if (performer.getPower() >= 2 || isOwner) {
                 try {
                     performer.getCommunicator().sendCustomizeFace(target.getFace(), BankerMod.faceSetters.createIdFor(target, (Player)performer));
-                } catch (FaceSetters.TooManyTransactionsException e) {
+                } catch (FaceSetter.TooManyTransactionsException e) {
                     logger.warning(e.getMessage());
                     performer.getCommunicator().sendAlertServerMessage(e.getMessage());
                 }

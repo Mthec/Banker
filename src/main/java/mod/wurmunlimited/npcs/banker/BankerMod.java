@@ -2,7 +2,6 @@ package mod.wurmunlimited.npcs.banker;
 
 import com.wurmonline.server.Items;
 import com.wurmonline.server.Server;
-import com.wurmonline.server.WurmId;
 import com.wurmonline.server.behaviours.*;
 import com.wurmonline.server.creatures.Communicator;
 import com.wurmonline.server.creatures.Creature;
@@ -23,6 +22,8 @@ import com.wurmonline.server.zones.VolaTile;
 import com.wurmonline.server.zones.Zones;
 import com.wurmonline.shared.constants.IconConstants;
 import com.wurmonline.shared.constants.ItemMaterials;
+import mod.wurmunlimited.npcs.AbstractFaceSetterMod;
+import mod.wurmunlimited.npcs.FaceSetter;
 import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
 import org.gotti.wurmunlimited.modloader.interfaces.*;
@@ -33,16 +34,18 @@ import org.gotti.wurmunlimited.modsupport.creatures.ModCreatures;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.nio.ByteBuffer;
-import java.sql.SQLException;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-public class BankerMod implements WurmServerMod, Configurable, Initable, PreInitable, ItemTemplatesCreatedListener, ServerStartedListener {
+public class BankerMod extends AbstractFaceSetterMod implements WurmServerMod, Configurable, PreInitable, ItemTemplatesCreatedListener, ServerStartedListener {
     private static final Logger logger = Logger.getLogger(BankerMod.class.getName());
-    public static final FaceSetters faceSetters = new FaceSetters();
+    public static BankerMod mod;
+    public static FaceSetter faceSetters;
     public static final Set<Integer> withdrawals = new HashSet<>();
     public static final int maxNameLength = 20;
     private boolean updateTraders = false;
@@ -57,6 +60,12 @@ public class BankerMod implements WurmServerMod, Configurable, Initable, PreInit
 
     public enum VillageOptions {
         STARTER, KINGDOM, ALLIANCE, VILLAGE
+    }
+
+    public BankerMod() {
+        super(logger, "banker.db");
+        mod = this;
+        faceSetters = faceSetter;
     }
 
     public static boolean isWrit(Item item) {
@@ -81,6 +90,11 @@ public class BankerMod implements WurmServerMod, Configurable, Initable, PreInit
 
     public static String getNamePrefix() {
         return namePrefix;
+    }
+
+    @Override
+    protected boolean isApplicableCreature(Creature creature) {
+        return BankerTemplate.is(creature);
     }
 
     @Override
@@ -181,37 +195,13 @@ public class BankerMod implements WurmServerMod, Configurable, Initable, PreInit
 
     @Override
     public void init() {
+        super.init();
         HookManager manager = HookManager.getInstance();
-
-        manager.registerHook("com.wurmonline.server.creatures.Creature",
-                "getFace",
-                "()J",
-                () -> this::getFace);
-
-        manager.registerHook("com.wurmonline.server.creatures.Creature",
-                "getBlood",
-                "()B",
-                () -> this::getBlood);
-
-        manager.registerHook("com.wurmonline.server.creatures.Communicator",
-                "sendNewCreature",
-                "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;FFFJFBZZZBJBZZB)V",
-                () -> this::sendNewCreature);
-
-        manager.registerHook("com.wurmonline.server.creatures.Creature",
-                "destroy",
-                "()V",
-                () -> this::destroy);
 
         manager.registerHook("com.wurmonline.server.questions.QuestionParser",
                 "parseCreatureCreationQuestion",
                 "(Lcom/wurmonline/server/questions/CreatureCreationQuestion;)V",
                 () -> this::creatureCreation);
-        
-        manager.registerHook("com.wurmonline.server.creatures.Communicator",
-                "reallyHandle_CMD_NEW_FACE",
-                "(Ljava/nio/ByteBuffer;)V",
-                () -> this::setFace);
         
         manager.registerHook("com.wurmonline.server.questions.QuestionParser",
                 "parseWithdrawMoneyQuestion",
@@ -235,7 +225,6 @@ public class BankerMod implements WurmServerMod, Configurable, Initable, PreInit
         PlaceNpcMenu.register();
         new PlaceBankerAction();
 
-        BankerDatabase.loadFaces();
         logger.info("Banker mod settings - update_traders " + updateTraders + ", " +
                             "contracts_on_traders " + contractsOnTraders + ", " +
                             "village_option " + villageOption.name().toLowerCase() + ", " +
@@ -271,50 +260,6 @@ public class BankerMod implements WurmServerMod, Configurable, Initable, PreInit
         }
     }
 
-    Object getFace(Object o, Method method, Object[] args) throws InvocationTargetException, IllegalAccessException {
-        Creature creature = (Creature)o;
-        if (BankerTemplate.is(creature)) {
-            Long newFace = BankerDatabase.getFaceFor(creature);
-            if (newFace == null) {
-                newFace = new Random(creature.getWurmId()).nextLong();
-                logger.warning("getFaceFor returned null.");
-            }
-            return newFace;
-        }
-        return method.invoke(o, args);
-    }
-
-    // Required for not having weird character model.
-    Object getBlood(Object o, Method method, Object[] args) throws InvocationTargetException, IllegalAccessException {
-        Creature creature = (Creature)o;
-        if (BankerTemplate.is(creature)) {
-            return (byte)-1;
-        }
-        return method.invoke(o, args);
-    }
-
-    Object sendNewCreature(Object o, Method method, Object[] args) throws InvocationTargetException, IllegalAccessException {
-        // If id is Creature id.
-        if (WurmId.getType((Long)args[0]) == 1) {
-            if ((Byte)args[15] == (byte)-1) {
-                // Blood - Should only apply to players, so re-purposing it for this should be okay.
-                args[15] = (byte)0;
-                // isCopy
-                args[17] = true;
-            }
-        }
-        return method.invoke(o, args);
-    }
-
-    Object destroy(Object o, Method method, Object[] args) throws InvocationTargetException, IllegalAccessException {
-        Creature creature = (Creature)o;
-        if (BankerTemplate.is(creature)) {
-            BankerDatabase.deleteFaceFor(creature);
-        }
-
-        return method.invoke(o, args);
-    }
-
     Object creatureCreation(Object o, Method method, Object[] args) throws InvocationTargetException, IllegalAccessException, NoSuchFieldException {
         CreatureCreationQuestion question = (CreatureCreationQuestion)args[0];
         Properties answers = ReflectionUtil.getPrivateField(question, Question.class.getDeclaredField("answer"));
@@ -343,45 +288,6 @@ public class BankerMod implements WurmServerMod, Configurable, Initable, PreInit
             e.printStackTrace();
         }
 
-        return method.invoke(o, args);
-    }
-
-    Object setFace(Object o, Method method, Object[] args) throws InvocationTargetException, IllegalAccessException {
-        ByteBuffer buf = (ByteBuffer)args[0];
-        buf.mark();
-        long face = buf.getLong();
-        long itemId = buf.getLong();
-
-        if (itemId < 0) {
-            Player player = ((Communicator)o).player;
-            if (player != null) {
-                Creature banker = faceSetters.retrieveBankerOrNull(player, itemId);
-
-                if (banker != null) {
-                    if (BankerTemplate.is(banker)) {
-                        if (BankerDatabase.isDifferentFace(face, banker)) {
-                            try {
-                                BankerDatabase.setFaceFor(banker, face);
-                                BankerDatabase.resetPlayerFace(player);
-                                player.getCommunicator().sendNormalServerMessage("The banker's face seems to shift about and takes a new form.");
-                            } catch (SQLException e) {
-                                logger.warning("Failed to set " + banker.getName() + "'s face.");
-                                e.printStackTrace();
-                                player.getCommunicator().sendNormalServerMessage("The banker's face seems to shift about, but then returns as it was.");
-                            }
-                        } else {
-                            player.getCommunicator().sendNormalServerMessage("The banker's face seems to shift about, but then returns as it was.");
-                        }
-
-                        return null;
-                    }
-                }
-            } else {
-                logger.warning("Why is player null?  This should never happen.");
-            }
-        }
-
-        buf.reset();
         return method.invoke(o, args);
     }
 

@@ -6,7 +6,8 @@ import com.wurmonline.server.questions.BankerManageAccountQuestion;
 import mod.wurmunlimited.npcs.banker.BankerTest;
 import org.junit.jupiter.api.Test;
 
-import static mod.wurmunlimited.Assert.*;
+import static mod.wurmunlimited.Assert.bmlEqual;
+import static mod.wurmunlimited.Assert.receivedMessageContaining;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -29,8 +30,8 @@ public class BankerMoveAccountTests extends BankerTest {
     @Test
     public void actionHasBankDifferentKingdom() {
         factory.createBankFor(player);
-        assert player.getKingdomId() == 0;
         banker.getStatus().kingdom = (byte)1;
+        assert player.getKingdomId() != banker.getStatus().kingdom;
 
         assertTrue(move.action(mock(Action.class), player, banker, move.getActionId(), 0));
 

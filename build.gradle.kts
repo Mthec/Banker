@@ -17,6 +17,7 @@ dependencies {
     implementation(fileTree(wurmServerFolder) { include("modlauncher.jar", "javassist.jar") })
     implementation(project(":BMLBuilder"))
     implementation(project(":PlaceNpc"))
+    implementation(project(":FaceSetter"))
 
     testImplementation(project(":WurmTestingHelper"))
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.0")

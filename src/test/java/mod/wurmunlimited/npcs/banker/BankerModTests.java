@@ -7,7 +7,6 @@ import com.wurmonline.server.creatures.CreatureTemplate;
 import com.wurmonline.server.economy.MonetaryConstants;
 import com.wurmonline.server.items.Item;
 import com.wurmonline.server.items.ItemList;
-import com.wurmonline.server.kingdom.Kingdom;
 import com.wurmonline.server.players.Player;
 import com.wurmonline.server.questions.BankerHireQuestion;
 import com.wurmonline.server.questions.CreatureCreationQuestion;
@@ -20,13 +19,13 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Properties;
 
 import static mod.wurmunlimited.Assert.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -93,102 +92,6 @@ public class BankerModTests extends BankerTest {
         mod.onItemTemplatesCreated();
 
         assertEquals(MonetaryConstants.COIN_SILVER, factory.createWritFor(player, banker).getValue());
-    }
-
-    @Test
-    public void testGetFace() throws Throwable {
-        long face = 123456;
-        BankerDatabase.setFaceFor(banker, face);
-        InvocationHandler handler = mod::getFace;
-        Method method = mock(Method.class);
-        when(method.invoke(any(), any())).thenReturn(-10L);
-        Object[] args = new Object[0];
-
-        assertEquals(face, handler.invoke(banker, method, args));
-    }
-
-    @Test
-    public void testGetFaceNotBanker() throws Throwable {
-        InvocationHandler handler = mod::getFace;
-        Method method = mock(Method.class);
-        when(method.invoke(any(), any())).thenReturn(-10L);
-        Object[] args = new Object[0];
-
-        assertEquals(-10L, handler.invoke(factory.createNewCreature(), method, args));
-    }
-
-    @Test
-    void testGetBloodReturnsMinus1ForBanker() throws Throwable {
-        InvocationHandler handler = mod::getBlood;
-        Method method = mock(Method.class);
-        Object[] args = new Object[0];
-
-        Byte blood = (Byte)handler.invoke(banker, method, args);
-        assertNotNull(blood);
-        assertEquals((byte)-1, (byte)blood);
-        verify(method, never()).invoke(banker, args);
-    }
-
-    @Test
-    void testGetBloodReturnsNormalForNonBanker() throws Throwable {
-        Creature creature = factory.createNewCreature();
-        InvocationHandler handler = mod::getBlood;
-        Method method = mock(Method.class);
-        Object[] args = new Object[0];
-
-        assertNull(handler.invoke(creature, method, args));
-        verify(method, times(1)).invoke(creature, args);
-    }
-
-    @Test
-    void testSendNewCreatureModifiesReturnForMinus1Blood() throws Throwable {
-        InvocationHandler handler = mod::sendNewCreature;
-        Method method = mock(Method.class);
-        Object[] args = new Object[] { banker.getWurmId(), banker.getName(), "", "model.whatsit", 1, 1, 1, 1, 1, (byte)1, true, false, true, Kingdom.KINGDOM_MOLREHAN, 0, (byte)-1, false, false, (byte)0 };
-
-        assertNull(handler.invoke(banker, method, args));
-        assertEquals((byte)0, (byte)args[15]);
-        assertTrue((boolean)args[17]);
-        verify(method, times(1)).invoke(banker, args);
-    }
-
-    @Test
-    void testSendNewCreatureReturnsNormalForNoneCrafter() throws Throwable {
-        Creature creature = factory.createNewCreature();
-        InvocationHandler handler = mod::sendNewCreature;
-        Method method = mock(Method.class);
-        Object[] args = new Object[] { creature.getWurmId(), creature.getName(), "", "model.whatsit", 1, 1, 1, 1, 1, (byte)1, true, false, true, Kingdom.KINGDOM_MOLREHAN, 0, (byte)0, false, false, (byte)0 };
-        assert !(boolean)args[17];
-
-        assertNull(handler.invoke(creature, method, args));
-        assertFalse((boolean)args[17]);
-        verify(method, times(1)).invoke(creature, args);
-    }
-
-    @Test
-    void testSendNewCreatureReturnsNormalForPlayerEvenIfBloodWasMinus1() throws Throwable {
-        InvocationHandler handler = mod::sendNewCreature;
-        Method method = mock(Method.class);
-        Object[] args = new Object[] { player.getWurmId(), player.getName(), "", "model.whatsit", 1, 1, 1, 1, 1, (byte)1, true, false, true, Kingdom.KINGDOM_MOLREHAN, 0, (byte)-1, false, false, (byte)0 };
-        assert !(boolean)args[17];
-
-        assertNull(handler.invoke(player, method, args));
-        assertFalse((boolean)args[17]);
-        verify(method, times(1)).invoke(player, args);
-    }
-
-    @Test
-    public void testDeleteFaceOnDestroy() throws Throwable {
-        assert !banker.isDead();
-        Long face = BankerDatabase.getFaceFor(banker);
-        assert face != null;
-        InvocationHandler handler = mod::destroy;
-        Method method = mock(Method.class);
-        Object[] args = new Object[0];
-
-        assertNull(handler.invoke(banker, method, args));
-        assertNull(BankerDatabase.getFaceFor(banker));
-        verify(method, times(1)).invoke(banker, args);
     }
 
     @Test
@@ -259,56 +162,6 @@ public class BankerModTests extends BankerTest {
         assertEquals(0, factory.getAllCreatures().size());
         assertEquals(1, factory.getCommunicator(player).getBml().length);
         assertThat(player, didNotReceiveMessageContaining("An error occurred"));
-    }
-
-    @Test
-    public void testSetFace() throws Throwable {
-        long face = 123456;
-        Long current = BankerDatabase.getFaceFor(banker);
-        assert current != null && current != face;
-        InvocationHandler handler = mod::setFace;
-        Method method = mock(Method.class);
-        ByteBuffer buffer = mock(ByteBuffer.class);
-        long id = BankerMod.faceSetters.createIdFor(banker, player);
-        when(buffer.getLong()).thenReturn(face, id);
-        Object[] args = new Object[] { buffer };
-
-        assertNull(handler.invoke(player.getCommunicator(), method, args));
-        assertEquals(face, BankerDatabase.getFaceFor(banker));
-        verify(buffer, never()).reset();
-        assertThat(player, receivedMessageContaining("banker's face"));
-    }
-
-    @Test
-    public void testSetFaceNotBanker() throws Throwable {
-        long face = 123456;
-        InvocationHandler handler = mod::setFace;
-        Method method = mock(Method.class);
-        ByteBuffer buffer = mock(ByteBuffer.class);
-        when(buffer.getLong()).thenReturn(face, factory.createNewItem(ItemList.handMirror).getWurmId());
-        Object[] args = new Object[] { buffer };
-
-        assertNull(handler.invoke(player.getCommunicator(), method, args));
-        verify(buffer, times(1)).reset();
-        verify(method, times(1)).invoke(player.getCommunicator(), args);
-        assertThat(player, didNotReceiveMessageContaining("banker's face"));
-    }
-
-    @Test
-    public void testSetFaceBankerChangingStatusLost() throws Throwable {
-        long face = 123456;
-        Long current = BankerDatabase.getFaceFor(banker);
-        assert current != null && current != face;
-        InvocationHandler handler = mod::setFace;
-        Method method = mock(Method.class);
-        ByteBuffer buffer = mock(ByteBuffer.class);
-        when(buffer.getLong()).thenReturn(face, -10L);
-        Object[] args = new Object[] { buffer };
-
-        assertNull(handler.invoke(player.getCommunicator(), method, args));
-        assertNotEquals(face, BankerDatabase.getFaceFor(banker));
-        verify(buffer, times(1)).reset();
-        assertThat(player, didNotReceiveMessageContaining("a new form"));
     }
 
     @Test

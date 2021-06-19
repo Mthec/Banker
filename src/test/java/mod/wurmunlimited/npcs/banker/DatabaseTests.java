@@ -1,8 +1,13 @@
 package mod.wurmunlimited.npcs.banker;
 
 import com.wurmonline.server.creatures.Creature;
+import mod.wurmunlimited.npcs.AbstractFaceSetterMod;
+import mod.wurmunlimited.npcs.FaceSetterDatabase;
+import org.gotti.wurmunlimited.modloader.ReflectionUtil;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -11,22 +16,31 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class BankerDatabaseTests extends BankerTest {
-    @Test
-    public void testIsDifferentFace() throws SQLException {
-        long face = 12345;
-        BankerDatabase.setFaceFor(banker, face);
+public class DatabaseTests extends BankerTest {
+    private FaceSetterDatabase database;
 
-        assertFalse(BankerDatabase.isDifferentFace(face, banker));
-        assertTrue(BankerDatabase.isDifferentFace(face + 1, banker));
-
-        BankerDatabase.deleteFaceFor(banker);
-        assert BankerDatabase.getFaceFor(banker) == null;
-        assertDoesNotThrow(() -> assertTrue(BankerDatabase.isDifferentFace(face, banker)));
+    @BeforeEach
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        database = ReflectionUtil.getPrivateField(BankerMod.mod, AbstractFaceSetterMod.class.getDeclaredField("database"));
     }
 
     @Test
-    public void testLoadFaces() throws SQLException {
+    public void testIsDifferentFace() throws SQLException {
+        long face = 12345;
+        database.setFaceFor(banker, face);
+
+        assertFalse(database.isDifferentFace(face, banker));
+        assertTrue(database.isDifferentFace(face + 1, banker));
+
+        database.deleteFaceFor(banker);
+        assert database.getFaceFor(banker) == null;
+        assertDoesNotThrow(() -> assertTrue(database.isDifferentFace(face, banker)));
+    }
+
+    @Test
+    public void testLoadFaces() throws SQLException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         Map<Creature, Long> faces = new HashMap<>();
 
         execute(db -> {
@@ -40,36 +54,36 @@ public class BankerDatabaseTests extends BankerTest {
             }
         });
 
-        BankerDatabase.loadFaces();
+        ReflectionUtil.callPrivateMethod(database, FaceSetterDatabase.class.getDeclaredMethod("loadFaces"));
 
-        faces.forEach((k, v) -> assertEquals(v, BankerDatabase.getFaceFor(k)));
+        faces.forEach((k, v) -> assertEquals(v, database.getFaceFor(k)));
     }
 
     @Test
     public void testGetFaceForNotBanker() {
-        assertNull(BankerDatabase.getFaceFor(factory.createNewCreature()));
+        assertNull(database.getFaceFor(factory.createNewCreature()));
     }
 
     @Test
     public void testSetTempFace() {
         long face = 12345;
-        BankerDatabase.setTempFace(face);
+        database.setTempFace(face);
 
         for (int i = 0; i < 10; i++) {
-            assertEquals(face, BankerDatabase.getFaceFor(factory.createNewBankerSkipSetup()));
+            assertEquals(face, database.getFaceFor(factory.createNewBankerSkipSetup()));
         }
 
-        BankerDatabase.removeTempFace(face);
-        assertNull(BankerDatabase.getFaceFor(factory.createNewBankerSkipSetup()));
+        database.removeTempFace(face);
+        assertNull(database.getFaceFor(factory.createNewBankerSkipSetup()));
     }
 
     @Test
     public void testSetFaceFor() throws SQLException {
         long face = 123456;
 
-        BankerDatabase.setFaceFor(banker, face);
+        database.setFaceFor(banker, face);
 
-        assertEquals(face, BankerDatabase.getFaceFor(banker));
+        assertEquals(face, database.getFaceFor(banker));
 
         execute(db -> {
             ResultSet rs = db.prepareStatement("SELECT * FROM faces;").executeQuery();
@@ -84,12 +98,12 @@ public class BankerDatabaseTests extends BankerTest {
     public void testSetFaceForChangeFace() throws SQLException {
         long face = 123456;
 
-        BankerDatabase.setFaceFor(banker, face - 1);
-        Long current = BankerDatabase.getFaceFor(banker);
+        database.setFaceFor(banker, face - 1);
+        Long current = database.getFaceFor(banker);
         assert current != null && current == face - 1;
-        BankerDatabase.setFaceFor(banker, face);
+        database.setFaceFor(banker, face);
 
-        assertEquals(face, BankerDatabase.getFaceFor(banker));
+        assertEquals(face, database.getFaceFor(banker));
 
         execute(db -> {
             ResultSet rs = db.prepareStatement("SELECT * FROM faces;").executeQuery();
@@ -102,16 +116,16 @@ public class BankerDatabaseTests extends BankerTest {
 
     @Test
     public void testDeleteFaceFor() throws SQLException {
-        Long face = BankerDatabase.getFaceFor(banker);
+        Long face = database.getFaceFor(banker);
         assert face != null;
         execute(db -> {
             ResultSet rs = db.prepareStatement("SELECT * FROM faces;").executeQuery();
             assertTrue(rs.next());
         });
 
-        BankerDatabase.deleteFaceFor(banker);
+        database.deleteFaceFor(banker);
 
-        assertNull(BankerDatabase.getFaceFor(banker));
+        assertNull(database.getFaceFor(banker));
 
         execute(db -> {
             ResultSet rs = db.prepareStatement("SELECT * FROM faces;").executeQuery();

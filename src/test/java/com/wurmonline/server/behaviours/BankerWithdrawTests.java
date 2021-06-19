@@ -9,7 +9,10 @@ import com.wurmonline.server.creatures.FakeCommunicator;
 import mod.wurmunlimited.npcs.banker.BankerTest;
 import org.junit.jupiter.api.Test;
 
-import static mod.wurmunlimited.Assert.*;
+import java.io.IOException;
+
+import static mod.wurmunlimited.Assert.bmlEqual;
+import static mod.wurmunlimited.Assert.receivedMessageContaining;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -39,10 +42,10 @@ public class BankerWithdrawTests extends BankerTest {
     }
 
     @Test
-    public void actionHasBankDifferentKingdom() {
+    public void actionHasBankDifferentKingdom() throws IOException {
         factory.createBankFor(player);
-        assert player.getKingdomId() == 0;
         banker.getStatus().kingdom = (byte)1;
+        assert player.getKingdomId() != banker.getKingdomId();
 
         assertTrue(withdraw.action(mock(Action.class), player, banker, withdraw.getActionId(), 0));
 

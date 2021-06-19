@@ -6,9 +6,8 @@ import com.wurmonline.server.items.Item;
 import com.wurmonline.server.players.Player;
 import com.wurmonline.shared.util.StringUtilities;
 import mod.wurmunlimited.bml.BMLBuilder;
-import mod.wurmunlimited.npcs.banker.BankerDatabase;
+import mod.wurmunlimited.npcs.FaceSetter;
 import mod.wurmunlimited.npcs.banker.BankerMod;
-import mod.wurmunlimited.npcs.banker.FaceSetters;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -86,13 +85,13 @@ public class BankerManageQuestion extends BankerQuestionExtension {
         if (faceString.isEmpty()) {
             try {
                 responder.getCommunicator().sendCustomizeFace(face, BankerMod.faceSetters.createIdFor(banker, responder));
-            } catch (FaceSetters.TooManyTransactionsException e) {
+            } catch (FaceSetter.TooManyTransactionsException e) {
                 logger.warning(e.getMessage());
                 responder.getCommunicator().sendAlertServerMessage(e.getMessage());
             }
         } else if (face != banker.getFace()) {
             try {
-                BankerDatabase.setFaceFor(banker, face);
+                BankerMod.mod.setFaceFor(banker, face);
                 responder.getCommunicator().sendNormalServerMessage("The banker's face seems to shift about and takes a new form.");
             } catch (SQLException e) {
                 logger.warning("Failed to set face (" + face + ") for banker (" + banker.getWurmId() + ").");

@@ -6,7 +6,7 @@ import com.wurmonline.server.creatures.FakeCreatureStatus;
 import com.wurmonline.server.items.Item;
 import com.wurmonline.server.zones.VolaTile;
 import com.wurmonline.server.zones.Zones;
-import mod.wurmunlimited.npcs.banker.BankerDatabase;
+import mod.wurmunlimited.WurmObjectsFactory;
 import mod.wurmunlimited.npcs.banker.BankerMod;
 import mod.wurmunlimited.npcs.banker.BankerTest;
 import org.gotti.wurmunlimited.modloader.ReflectionUtil;
@@ -33,7 +33,8 @@ public class BankerManageQuestionTests extends BankerTest {
     protected void setUp() throws Exception {
         super.setUp();
         banker = mock(Creature.class);
-        BankerDatabase.setFaceFor(banker, face);
+        when(banker.getWurmId()).thenReturn(987654L);
+        BankerMod.mod.setFaceFor(banker, face);
         AtomicReference<String> name = new AtomicReference<>("Banker_Dave");
         when(banker.getName()).thenAnswer(i -> name.get());
         doAnswer((Answer<Void>)i -> {
@@ -41,7 +42,6 @@ public class BankerManageQuestionTests extends BankerTest {
             return null;
         }).when(banker).setName(anyString());
         when(banker.getFace()).thenAnswer(i -> getFace());
-        when(banker.getWurmId()).thenReturn(987654L);
         VolaTile tile = Zones.getOrCreateTile(10, 10, true);
         when(banker.getCurrentTile()).thenReturn(tile);
         when(banker.getTileX()).thenReturn(10);
@@ -57,14 +57,11 @@ public class BankerManageQuestionTests extends BankerTest {
             return null;
         }).when(banker).destroy();
         when(banker.getHisHerItsString()).thenReturn("their");
+        ReflectionUtil.<Map<Long, Creature>>getPrivateField(factory, WurmObjectsFactory.class.getDeclaredField("creatures")).put(banker.getWurmId(), banker);
     }
 
     private Long getFace() {
-        try {
-            return ReflectionUtil.<Map<Creature, Long>>getPrivateField(null, BankerDatabase.class.getDeclaredField("faces")).get(banker);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
+        return BankerMod.mod.getFaceFor(banker);
     }
 
     // sendQuestion

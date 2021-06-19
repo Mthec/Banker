@@ -5,8 +5,6 @@ import com.wurmonline.server.items.Item;
 import com.wurmonline.server.zones.VolaTile;
 import mod.wurmunlimited.WurmObjectsFactory;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.Properties;
 
 import static org.mockito.Mockito.mock;
@@ -21,18 +19,6 @@ public class BankerObjectsFactory extends WurmObjectsFactory {
         mod.configure(defaultProperties());
         mod.onItemTemplatesCreated();
         BankerMod.withdrawals.clear();
-
-        try {
-            Field faceSetters = BankerMod.class.getDeclaredField("faceSetters");
-            faceSetters.setAccessible(true);
-            Field modifiers = Field.class.getDeclaredField("modifiers");
-            modifiers.setAccessible(true);
-            modifiers.setInt(faceSetters, faceSetters.getModifiers() & ~Modifier.FINAL);
-            faceSetters.set(null, new FaceSetters());
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        }
     }
 
     public Properties defaultProperties() {
@@ -52,7 +38,7 @@ public class BankerObjectsFactory extends WurmObjectsFactory {
             creatures.put(banker.getWurmId(), banker);
             banker.createPossessions();
             attachFakeCommunicator(banker);
-            BankerDatabase.setFaceFor(banker, 98765);
+            BankerMod.mod.setFaceFor(banker, 98765);
 
             return banker;
         } catch (Exception e) {

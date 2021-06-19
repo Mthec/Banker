@@ -9,10 +9,9 @@ import com.wurmonline.server.structures.Structure;
 import com.wurmonline.server.zones.VolaTile;
 import com.wurmonline.shared.util.StringUtilities;
 import mod.wurmunlimited.bml.BMLBuilder;
-import mod.wurmunlimited.npcs.banker.BankerDatabase;
+import mod.wurmunlimited.npcs.FaceSetter;
 import mod.wurmunlimited.npcs.banker.BankerMod;
 import mod.wurmunlimited.npcs.banker.BankerTemplate;
-import mod.wurmunlimited.npcs.banker.FaceSetters;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Properties;
@@ -89,9 +88,9 @@ public class BankerHireQuestion extends BankerQuestionExtension {
                 if (faceWasRandom) {
                     responder.getCommunicator().sendCustomizeFace(face, BankerMod.faceSetters.createIdFor(banker, responder));
                 } else {
-                    BankerDatabase.setFaceFor(banker, face);
+                    BankerMod.mod.setFaceFor(banker, face);
                 }
-            } catch (FaceSetters.TooManyTransactionsException e) {
+            } catch (FaceSetter.TooManyTransactionsException e) {
                 logger.warning(e.getMessage());
                 responder.getCommunicator().sendAlertServerMessage(e.getMessage());
             } catch (Exception e) {

@@ -74,9 +74,7 @@ public class BankerTemplate implements ModCreature {
     }
 
     public static Creature createCreature(VolaTile tile, int floorLevel, String name, byte sex, byte kingdom, long face) throws Exception {
-        BankerDatabase.setTempFace(face);
-        Creature banker = Creature.doNew(templateId, (float)(tile.getTileX() << 2) + 2.0F, (float)(tile.getTileY() << 2) + 2.0F, 180.0F, tile.getLayer(), name, sex, kingdom);
-        BankerDatabase.removeTempFace(face);
+        Creature banker = BankerMod.mod.withTempFace(() -> Creature.doNew(templateId, (float)(tile.getTileX() << 2) + 2.0F, (float)(tile.getTileY() << 2) + 2.0F, 180.0F, tile.getLayer(), name, sex, kingdom), face);
 
         if (floorLevel != 0) {
             banker.pushToFloorLevel(floorLevel);
