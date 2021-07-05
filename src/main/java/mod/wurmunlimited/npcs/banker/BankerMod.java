@@ -42,7 +42,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-public class BankerMod implements WurmServerMod, Configurable, PreInitable, ItemTemplatesCreatedListener, ServerStartedListener {
+public class BankerMod implements WurmServerMod, Configurable, Initable, PreInitable, ItemTemplatesCreatedListener, ServerStartedListener {
     private static final Logger logger = Logger.getLogger(BankerMod.class.getName());
     public static BankerMod mod;
     public static final String dbName = "banker.db";

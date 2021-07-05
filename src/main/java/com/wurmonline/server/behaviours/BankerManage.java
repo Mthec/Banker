@@ -19,16 +19,14 @@ import static mod.wurmunlimited.npcs.banker.BankerMod.gmManagePowerRequired;
 
 public class BankerManage implements ModAction, ActionPerformer, BehaviourProvider {
     private final short actionId;
-    static final List<ActionEntry> entries = new ArrayList<>();
+    private final List<ActionEntry> entry = new ArrayList<>();
     private final List<ActionEntry> empty = Collections.emptyList();
 
     public BankerManage() {
         actionId = (short)ModActions.getNextActionId();
         ActionEntry actionEntry = new ActionEntryBuilder(actionId, "Manage", "managing").build();
         ModActions.registerAction(actionEntry);
-        entries.clear();
-        entries.add(new ActionEntryBuilder((short)-2, "Manage", "managing").build());
-        entries.add(actionEntry);
+        entry.add(actionEntry);
     }
 
     private static boolean writValid(Creature performer, Creature banker, @Nullable Item writ) {
@@ -43,7 +41,7 @@ public class BankerManage implements ModAction, ActionPerformer, BehaviourProvid
 
     private List<ActionEntry> getBehaviours(Creature performer, Creature banker, @Nullable Item writ) {
         if (canManage(performer, banker, writ)) {
-            return entries;
+            return entry;
         }
 
         return empty;

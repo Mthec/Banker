@@ -33,9 +33,7 @@ public class BankerManageTests extends BankerTest {
     // getBehavioursFor
 
     private boolean isBehaviour(List<ActionEntry> entries) {
-        return entries.size() == 2 &&
-                       entries.get(0).getActionString().equals("Manage") &&
-                       entries.get(1).getActionString().equals("Manage");
+        return entries.size() == 1 && entries.get(0).getActionString().equals("Manage");
     }
 
     private boolean isEmpty(List<ActionEntry> entries) {
