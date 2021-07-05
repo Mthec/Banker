@@ -34,7 +34,7 @@ public class BankerManageQuestionTests extends BankerTest {
         super.setUp();
         banker = mock(Creature.class);
         when(banker.getWurmId()).thenReturn(987654L);
-        BankerMod.mod.setFaceFor(banker, face);
+        BankerMod.mod.faceSetter.setFaceFor(banker, face);
         AtomicReference<String> name = new AtomicReference<>("Banker_Dave");
         when(banker.getName()).thenAnswer(i -> name.get());
         doAnswer((Answer<Void>)i -> {
@@ -61,7 +61,7 @@ public class BankerManageQuestionTests extends BankerTest {
     }
 
     private Long getFace() {
-        return BankerMod.mod.getFaceFor(banker);
+        return BankerMod.mod.faceSetter.getFaceFor(banker);
     }
 
     // sendQuestion
@@ -76,7 +76,7 @@ public class BankerManageQuestionTests extends BankerTest {
     public void testNameWithBlankPrefixCorrectlySet() throws SQLException {
         Properties properties = factory.defaultProperties();
         properties.setProperty("name_prefix", "");
-        new BankerMod().configure(properties);
+        BankerMod.mod.configure(properties);
 
         new BankerManageQuestion(player, banker).sendQuestion();
         assertThat(player, receivedBMLContaining("input{text=\"Banker_Dave\";id=\"name\";maxchars=\"" + BankerMod.maxNameLength + "\"}"));
@@ -90,10 +90,9 @@ public class BankerManageQuestionTests extends BankerTest {
 
     // answer
 
-    private void answer(@Nullable String name, @Nullable String newFace) {
+    private void answer(@Nullable String name) {
         Properties properties = new Properties();
         properties.setProperty("name", name != null ? name : "");
-        properties.setProperty("face", newFace != null ? newFace : Long.toString(face));
 
         new BankerManageQuestion(player, banker).answer(properties);
     }
@@ -102,10 +101,9 @@ public class BankerManageQuestionTests extends BankerTest {
     public void testAnswerBankerDead() {
         reset(banker.getCurrentTile());
         banker.destroy();
-        answer(null, null);
+        answer(null);
 
         assertEquals(0, factory.getCommunicator(player).getBml().length);
-        verify(banker.getCurrentTile(), never()).setNewFace(banker);
         assertNull(factory.getCommunicator(player).sendCustomizeFace);
         assertThat(player, receivedMessageContaining("disappeared"));
     }
@@ -119,7 +117,6 @@ public class BankerManageQuestionTests extends BankerTest {
         new BankerManageQuestion(player, banker).answer(properties);
 
         assertEquals(0, factory.getCommunicator(player).getBml().length);
-        verify(banker.getCurrentTile(), never()).setNewFace(banker);
         banker.currentTile = null;
         verify(banker.getCurrentTile(), times(1)).broadCastAction(banker.getName() + " grunts, packs " + banker.getHisHerItsString() + " things and is off.", banker, null, false);
         assertNull(factory.getCommunicator(player).sendCustomizeFace);
@@ -135,14 +132,12 @@ public class BankerManageQuestionTests extends BankerTest {
         String fullName = "Banker_" + name;
         assert !banker.getName().equals(fullName);
         reset(banker.getCurrentTile());
-        answer(name, null);
+        answer(name);
 
         assertEquals(0, factory.getCommunicator(player).getBml().length);
         assertEquals(fullName, banker.getName());
         assertEquals(fullName, ((FakeCreatureStatus)banker.getStatus()).savedName);
         assertThat(player, receivedMessageContaining(banker.getName()));
-        verify(banker.getCurrentTile(), never()).setNewFace(banker);
-        assertNull(factory.getCommunicator(player).sendCustomizeFace);
     }
 
     @Test
@@ -152,62 +147,24 @@ public class BankerManageQuestionTests extends BankerTest {
         String oldName = banker.getName();
         assert !banker.getName().equals(fullName);
         reset(banker.getCurrentTile());
-        answer(name, null);
+        answer(name);
 
         assertEquals(0, factory.getCommunicator(player).getBml().length);
         assertEquals(oldName, banker.getName());
         assertEquals(FakeCreatureStatus.unset, ((FakeCreatureStatus)banker.getStatus()).savedName);
         assertThat(player, receivedMessageContaining("remain " + oldName));
-        verify(banker.getCurrentTile(), never()).setNewFace(banker);
-        assertNull(factory.getCommunicator(player).sendCustomizeFace);
     }
 
     @Test
-    public void testAnswerFace() {
-        long face = 123456;
-        reset(banker.getCurrentTile());
-        answer(null, Long.toString(face));
+    public void testAnswerCustomiseQuestionSent() {
+        Properties properties = new Properties();
+        properties.setProperty("name", "Albert");
+        properties.setProperty("customise", "true");
+        new BankerManageQuestion(player, banker).answer(properties);
 
-        assertEquals(0, factory.getCommunicator(player).getBml().length);
-        assertEquals(face, face);
-        verify(banker.getCurrentTile(), times(1)).setNewFace(banker);
-        assertNull(factory.getCommunicator(player).sendCustomizeFace);
-        assertThat(player, receivedMessageContaining("takes a new form"));
         assertThat(player, didNotReceiveMessageContaining(banker.getName()));
-    }
 
-    @Test
-    public void testAnswerEmptyFace() {
-        reset(banker.getCurrentTile());
-        answer(null, "");
-
-        assertEquals(0, factory.getCommunicator(player).getBml().length);
-        verify(banker.getCurrentTile(), never()).setNewFace(banker);
-        assertNotNull(factory.getCommunicator(player).sendCustomizeFace);
-        assertThat(player, didNotReceiveMessageContaining("takes a new form"));
-        assertThat(player, didNotReceiveMessageContaining(banker.getName()));
-    }
-
-    @Test
-    public void testAnswerInvalidFace() {
-        reset(banker.getCurrentTile());
-        answer(null, "abc");
-
-        verify(banker.getCurrentTile(), never()).setNewFace(banker);
-        assertNull(factory.getCommunicator(player).sendCustomizeFace);
-        assertThat(player, didNotReceiveMessageContaining("takes a new form"));
-        assertThat(player, didNotReceiveMessageContaining(banker.getName()));
-    }
-
-    @Test
-    public void testAnswerSameFace() {
-        reset(banker.getCurrentTile());
-        answer(null, null);
-
-        assertThat(player, didNotReceiveMessageContaining("Invalid face"));
-        assertThat(player, didNotReceiveMessageContaining("takes a new form"));
-        verify(banker.getCurrentTile(), never()).setNewFace(banker);
-        assertNull(factory.getCommunicator(player).sendCustomizeFace);
-        assertThat(player, didNotReceiveMessageContaining(banker.getName()));
+        new CreatureCustomiserQuestion(player, banker, BankerMod.mod.faceSetter, BankerMod.mod.modelSetter, BankerManageAccountQuestion.modelOptions).sendQuestion();
+        assertThat(player, bmlEqual());
     }
 }

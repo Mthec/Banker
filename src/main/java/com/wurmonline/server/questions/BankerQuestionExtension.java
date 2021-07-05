@@ -6,6 +6,8 @@ import mod.wurmunlimited.npcs.banker.BankerMod;
 import java.util.Properties;
 
 public abstract class BankerQuestionExtension extends Question {
+    protected static final ModelOption[] modelOptions = new ModelOption[] { ModelOption.HUMAN, ModelOption.TRADER, ModelOption.CUSTOM };
+
     BankerQuestionExtension(Creature aResponder, String aTitle, String aQuestion, int aType, long aTarget) {
         super(aResponder, aTitle, aQuestion, aType, aTarget);
     }

@@ -4,6 +4,9 @@ import com.wurmonline.server.Constants;
 import com.wurmonline.server.behaviours.*;
 import com.wurmonline.server.creatures.Creature;
 import com.wurmonline.server.players.Player;
+import mod.wurmunlimited.npcs.FaceSetter;
+import mod.wurmunlimited.npcs.ModelSetter;
+import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 import org.gotti.wurmunlimited.modsupport.actions.ActionEntryBuilder;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +15,7 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.List;
 
 public abstract class BankerTest {
     protected BankerObjectsFactory factory;
@@ -22,8 +26,6 @@ public abstract class BankerTest {
     protected static BankerMoveAccount move;
     protected static BankerHire hire;
     protected static BankerManage manage;
-    protected static BankerChangeFace changeFace;
-    protected static BankerGive give;
     protected static PlaceNpcMenu menu;
     protected Player player;
     protected Creature banker;
@@ -60,12 +62,18 @@ public abstract class BankerTest {
             move = new BankerMoveAccount();
             hire = new BankerHire();
             manage = new BankerManage();
-            changeFace = new BankerChangeFace();
-            give = new BankerGive();
             new PlaceBankerAction();
             menu = PlaceNpcMenu.register();
             init = true;
         }
+
+        ReflectionUtil.<List<FaceSetter>>getPrivateField(null, FaceSetter.class.getDeclaredField("faceSetters")).clear();
+        ReflectionUtil.<List<ModelSetter>>getPrivateField(null, ModelSetter.class.getDeclaredField("modelSetters")).clear();
+
+        BankerMod mod = new BankerMod();
+
+        mod.faceSetter = new FaceSetter(BankerTemplate::is, "banker.db");
+        mod.modelSetter = new ModelSetter(BankerTemplate::is, "banker.db");
 
         player = factory.createNewPlayer();
         banker = factory.createNewBanker();

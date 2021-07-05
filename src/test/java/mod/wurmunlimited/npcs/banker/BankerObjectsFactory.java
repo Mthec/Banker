@@ -34,11 +34,11 @@ public class BankerObjectsFactory extends WurmObjectsFactory {
     public Creature createNewBanker(byte kingdom) {
         Creature banker;
         try {
-            banker = BankerTemplate.createCreature(createNewPlayer().getCurrentTile(), 0, "Banker_Fred", (byte)0, kingdom, 0);
+            banker = BankerTemplate.createCreature(createNewPlayer().getCurrentTile(), 0, "Banker_Fred", (byte)0, kingdom);
             creatures.put(banker.getWurmId(), banker);
             banker.createPossessions();
             attachFakeCommunicator(banker);
-            BankerMod.mod.setFaceFor(banker, 98765);
+            BankerMod.mod.faceSetter.setFaceFor(banker, 98765);
 
             return banker;
         } catch (Exception e) {

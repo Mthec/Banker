@@ -22,8 +22,8 @@ import com.wurmonline.server.zones.VolaTile;
 import com.wurmonline.server.zones.Zones;
 import com.wurmonline.shared.constants.IconConstants;
 import com.wurmonline.shared.constants.ItemMaterials;
-import mod.wurmunlimited.npcs.AbstractFaceSetterMod;
 import mod.wurmunlimited.npcs.FaceSetter;
+import mod.wurmunlimited.npcs.ModelSetter;
 import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
 import org.gotti.wurmunlimited.modloader.interfaces.*;
@@ -42,10 +42,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-public class BankerMod extends AbstractFaceSetterMod implements WurmServerMod, Configurable, PreInitable, ItemTemplatesCreatedListener, ServerStartedListener {
+public class BankerMod implements WurmServerMod, Configurable, PreInitable, ItemTemplatesCreatedListener, ServerStartedListener {
     private static final Logger logger = Logger.getLogger(BankerMod.class.getName());
     public static BankerMod mod;
-    public static FaceSetter faceSetters;
+    public static final String dbName = "banker.db";
+    public FaceSetter faceSetter;
+    public ModelSetter modelSetter;
     public static final Set<Integer> withdrawals = new HashSet<>();
     public static final int maxNameLength = 20;
     private boolean updateTraders = false;
@@ -62,10 +64,8 @@ public class BankerMod extends AbstractFaceSetterMod implements WurmServerMod, C
         STARTER, KINGDOM, ALLIANCE, VILLAGE
     }
 
-    public BankerMod() {
-        super(logger, "banker.db");
+    public BankerMod()  {
         mod = this;
-        faceSetters = faceSetter;
     }
 
     public static boolean isWrit(Item item) {
@@ -90,11 +90,6 @@ public class BankerMod extends AbstractFaceSetterMod implements WurmServerMod, C
 
     public static String getNamePrefix() {
         return namePrefix;
-    }
-
-    @Override
-    protected boolean isApplicableCreature(Creature creature) {
-        return BankerTemplate.is(creature);
     }
 
     @Override
@@ -195,7 +190,6 @@ public class BankerMod extends AbstractFaceSetterMod implements WurmServerMod, C
 
     @Override
     public void init() {
-        super.init();
         HookManager manager = HookManager.getInstance();
 
         manager.registerHook("com.wurmonline.server.questions.QuestionParser",
@@ -208,22 +202,27 @@ public class BankerMod extends AbstractFaceSetterMod implements WurmServerMod, C
                 "(Lcom/wurmonline/server/questions/WithdrawMoneyQuestion;)V",
                 () -> this::withdrawMoney);
 
+        FaceSetter.init(manager);
+        ModelSetter.init(manager);
         ModCreatures.init();
         ModCreatures.addCreature(new BankerTemplate());
     }
 
     @Override
     public void onServerStarted() {
+        faceSetter = new FaceSetter(BankerTemplate::is, dbName);
+        modelSetter = new ModelSetter(BankerTemplate::is, dbName);
+
         ModActions.registerAction(new BankerActions());
         ModActions.registerAction(new BankerManageAccount());
         ModActions.registerAction(new BankerWithdraw());
         ModActions.registerAction(new BankerMoveAccount());
         ModActions.registerAction(new BankerHire());
         ModActions.registerAction(new BankerManage());
-        ModActions.registerAction(new BankerChangeFace());
-        ModActions.registerAction(new BankerGive());
         PlaceNpcMenu.register();
         new PlaceBankerAction();
+        CustomiserPlayerGiveAction.register(BankerTemplate::is, new BankerCanGiveRemove());
+        CustomiserPlayerRemoveAction.register(BankerTemplate::is, new BankerCanGiveRemove());
 
         logger.info("Banker mod settings - update_traders " + updateTraders + ", " +
                             "contracts_on_traders " + contractsOnTraders + ", " +

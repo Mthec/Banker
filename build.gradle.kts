@@ -3,21 +3,22 @@ plugins {
 }
 
 group = "mod.wurmunlimited.npcs.banker"
-version = "0.2"
+version = "0.2.1"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 val shortName = "banker"
 val wurmServerFolder = "E:/Steam/steamapps/common/Wurm Unlimited/WurmServerLauncher/"
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
 dependencies {
-    implementation(fileTree(wurmServerFolder) { include("server.jar") })
-    implementation(fileTree(wurmServerFolder) { include("modlauncher.jar", "javassist.jar") })
     implementation(project(":BMLBuilder"))
     implementation(project(":PlaceNpc"))
-    implementation(project(":FaceSetter"))
+    implementation(project(":CreatureCustomiser"))
+    implementation("com.wurmonline:server:1.9")
+    implementation("org.gotti.wurmunlimited:server-modlauncher:0.45")
 
     testImplementation(project(":WurmTestingHelper"))
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.0")
@@ -44,6 +45,7 @@ tasks {
 
         from(configurations.runtimeClasspath.get().filter { it.name.startsWith("BMLBuilder") && it.name.endsWith("jar") }.map { zipTree(it) })
         from(configurations.runtimeClasspath.get().filter { it.name.startsWith("PlaceNpc") && it.name.endsWith("jar") }.map { zipTree(it) })
+        from(configurations.runtimeClasspath.get().filter { it.name.startsWith("CreatureCustomiser") && it.name.endsWith("jar") }.map { zipTree(it) })
 
         includeEmptyDirs = false
         archiveFileName.set("$shortName.jar")

@@ -19,7 +19,8 @@ import java.util.Properties;
 import static mod.wurmunlimited.Assert.receivedBMLContaining;
 import static mod.wurmunlimited.Assert.receivedMessageContaining;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -75,26 +76,25 @@ public class BankerHireQuestionTests extends BankerTest {
     }
 
     // answer
-    private void answer(@Nullable String face, @Nullable String gender, @Nullable String name) {
-        answer(face, gender, name, null);
+    private void answer(@Nullable String gender, @Nullable String name) {
+        answer(gender, name, null);
     }
 
-    private void answer(@Nullable String face, @Nullable String gender, @Nullable String name, @Nullable Item writ) {
+    private void answer(@Nullable String gender, @Nullable String name, @Nullable Item writ) {
         try {
             tile = Zones.getZone(player.getTileX(), player.getTileY(), player.isOnSurface()).getOrCreateTile(player.getTilePos());
             when(tile.getCreatures()).thenReturn(new Creature[0]);
             when(tile.getStructure()).thenReturn(null);
-            answer(face, gender, name, writ, tile);
+            answer(gender, name, writ, tile);
         } catch (NoSuchZoneException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void answer(@Nullable String face, @Nullable String gender, @Nullable String name, @Nullable Item writ, VolaTile tile) {
+    private void answer(@Nullable String gender, @Nullable String name, @Nullable Item writ, VolaTile tile) {
         if (this.tile == null)
             this.tile = tile;
         Properties properties = new Properties();
-        properties.setProperty("face", face != null ? face : "");
         properties.setProperty("gender", gender != null ? gender : "female");
         properties.setProperty("name", name != null ? name : "");
 
@@ -109,47 +109,43 @@ public class BankerHireQuestionTests extends BankerTest {
 
     @Test
     public void testAnswer() {
-        answer(null, null, null);
+        answer(null, null);
 
         hasArrived();
         assertEquals(1, factory.getAllCreatures().size());
         Creature banker = factory.getAllCreatures().iterator().next();
         assertTrue(BankerTemplate.is(banker));
-        assertNotNull(factory.getCommunicator(player).sendCustomizeFace);
     }
 
     @Test
     public void testAnswerGender() {
-        answer(null, "male", null);
+        answer("male", null);
 
         hasArrived();
         assertEquals(1, factory.getAllCreatures().size());
         Creature banker = factory.getAllCreatures().iterator().next();
         assertTrue(BankerTemplate.is(banker));
         assertEquals((byte)0, banker.getSex());
-        assertNotNull(factory.getCommunicator(player).sendCustomizeFace);
 
         factory.getAllCreatures().removeIf(c -> true);
-        answer(null, "female", null);
+        answer("female", null);
 
         hasArrived();
         assertEquals(1, factory.getAllCreatures().size());
         Creature banker2 = factory.getAllCreatures().iterator().next();
         assertTrue(BankerTemplate.is(banker2));
         assertEquals((byte)1, banker2.getSex());
-        assertNotNull(factory.getCommunicator(player).sendCustomizeFace);
     }
 
     @Test
     public void testAnswerName() {
-        answer(null, null, "test");
+        answer(null, "test");
 
         hasArrived();
         assertEquals(1, factory.getAllCreatures().size());
         Creature banker = factory.getAllCreatures().iterator().next();
         assertTrue(BankerTemplate.is(banker));
         assertEquals("Banker_Test", banker.getName());
-        assertNotNull(factory.getCommunicator(player).sendCustomizeFace);
     }
 
     @Test
@@ -157,38 +153,13 @@ public class BankerHireQuestionTests extends BankerTest {
         Properties properties = factory.defaultProperties();
         properties.setProperty("name_prefix", "");
         new BankerMod().configure(properties);
-        answer(null, null, "test");
+        answer(null, "test");
 
         hasArrived();
         assertEquals(1, factory.getAllCreatures().size());
         Creature banker = factory.getAllCreatures().iterator().next();
         assertTrue(BankerTemplate.is(banker));
         assertEquals("Test", banker.getName());
-        assertNotNull(factory.getCommunicator(player).sendCustomizeFace);
-    }
-
-    @Test
-    public void testAnswerFace() {
-        long face = 12345;
-        answer(Long.toString(face), null, null);
-
-        hasArrived();
-        assertEquals(1, factory.getAllCreatures().size());
-        Creature banker = factory.getAllCreatures().iterator().next();
-        assertTrue(BankerTemplate.is(banker));
-        assertEquals(face, BankerMod.mod.getFaceFor(banker));
-        assertNull(factory.getCommunicator(player).sendCustomizeFace);
-    }
-
-    @Test
-    public void testAnswerInvalidFace() {
-        answer("abc", null, null);
-
-        hasArrived();
-        assertEquals(1, factory.getAllCreatures().size());
-        Creature banker = factory.getAllCreatures().iterator().next();
-        assertTrue(BankerTemplate.is(banker));
-        assertNotNull(factory.getCommunicator(player).sendCustomizeFace);
     }
 
     @Test
@@ -196,7 +167,7 @@ public class BankerHireQuestionTests extends BankerTest {
         Item writ = factory.createNewItem(BankerMod.getContractTemplateId());
         assert writ.getName().equals("banker contract");
         player.getInventory().insertItem(writ);
-        answer(null, null, null, writ);
+        answer(null, null, writ);
 
         hasArrived();
         assertEquals(1, factory.getAllCreatures().size());
@@ -205,7 +176,6 @@ public class BankerHireQuestionTests extends BankerTest {
         assertEquals(1, player.getInventory().getItemCount());
         assertEquals(banker2.getWurmId(), writ.getData());
         assertEquals("banker writ", writ.getName());
-        assertNotNull(factory.getCommunicator(player).sendCustomizeFace);
     }
 
     @Test
@@ -215,11 +185,10 @@ public class BankerHireQuestionTests extends BankerTest {
         VolaTile tile = mock(VolaTile.class);
         when(tile.getCreatures()).thenReturn(creatures);
         when(tile.getStructure()).thenReturn(null);
-        answer(null, null, null, null, tile);
+        answer(null, null, null, tile);
 
         assertThat(player, receivedMessageContaining("no other creatures"));
         assertEquals(0, factory.getAllCreatures().size());
-        assertNull(factory.getCommunicator(player).sendCustomizeFace);
     }
 
     @Test
@@ -227,13 +196,12 @@ public class BankerHireQuestionTests extends BankerTest {
         VolaTile tile = Zones.getZone(player.getTileX(), player.getTileY(), player.isOnSurface()).getOrCreateTile(player.getTilePos());
         when(tile.getCreatures()).thenReturn(new Creature[] { player });
         when(tile.getStructure()).thenReturn(null);
-        answer(null, null, null, null, tile);
+        answer(null, null, null, tile);
 
         hasArrived();
         assertEquals(1, factory.getAllCreatures().size());
         Creature banker = factory.getAllCreatures().iterator().next();
         assertTrue(BankerTemplate.is(banker));
-        assertNotNull(factory.getCommunicator(player).sendCustomizeFace);
     }
 
     @Test
@@ -243,10 +211,9 @@ public class BankerHireQuestionTests extends BankerTest {
         Structure structure = mock(Structure.class);
         when(structure.mayPlaceMerchants(any())).thenReturn(false);
         when(tile.getStructure()).thenReturn(structure);
-        answer(null, null, null, null, tile);
+        answer(null, null, null, tile);
 
         assertThat(player, receivedMessageContaining("not have permission"));
         assertEquals(0, factory.getAllCreatures().size());
-        assertNull(factory.getCommunicator(player).sendCustomizeFace);
     }
 }

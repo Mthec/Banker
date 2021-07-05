@@ -9,7 +9,7 @@ import com.wurmonline.server.structures.Structure;
 import com.wurmonline.server.zones.VolaTile;
 import com.wurmonline.shared.util.StringUtilities;
 import mod.wurmunlimited.bml.BMLBuilder;
-import mod.wurmunlimited.npcs.FaceSetter;
+import mod.wurmunlimited.npcs.FaceSetters;
 import mod.wurmunlimited.npcs.banker.BankerMod;
 import mod.wurmunlimited.npcs.banker.BankerTemplate;
 import org.jetbrains.annotations.Nullable;
@@ -39,21 +39,6 @@ public class BankerHireQuestion extends BankerQuestionExtension {
     public void answer(Properties answers) {
         setAnswer(answers);
 
-        String faceString = getStringProp("face");
-        long face;
-        boolean faceWasRandom = true;
-        if (faceString.isEmpty()) {
-            face = r.nextLong();
-        } else {
-            try {
-                face = Long.parseLong(faceString);
-                faceWasRandom = false;
-            } catch (NumberFormatException e) {
-                responder.getCommunicator().sendAlertServerMessage("Invalid face value, setting random.");
-                face = r.nextLong();
-            }
-        }
-
         byte sex = 0;
         if (wasAnswered("gender", "female"))
             sex = 1;
@@ -77,7 +62,7 @@ public class BankerHireQuestion extends BankerQuestionExtension {
                     fullName = name;
                 else
                     fullName = prefix + "_" + name;
-                Creature banker = BankerTemplate.createCreature(tile, floorLevel, fullName, sex, responder.getKingdomId(), face);
+                Creature banker = BankerTemplate.createCreature(tile, floorLevel, fullName, sex, responder.getKingdomId());
                 logger.info(responder.getName() + " created a banker: " + banker.getWurmId());
 
                 if (contract != null) {
@@ -85,12 +70,10 @@ public class BankerHireQuestion extends BankerQuestionExtension {
                     contract.setData(banker.getWurmId());
                 }
 
-                if (faceWasRandom) {
-                    responder.getCommunicator().sendCustomizeFace(face, BankerMod.faceSetters.createIdFor(banker, responder));
-                } else {
-                    BankerMod.mod.setFaceFor(banker, face);
+                if (wasSelected("customise")) {
+                    new CreatureCustomiserQuestion(responder, banker, BankerMod.mod.faceSetter, BankerMod.mod.modelSetter, modelOptions).sendQuestion();
                 }
-            } catch (FaceSetter.TooManyTransactionsException e) {
+            } catch (FaceSetters.TooManyTransactionsException e) {
                 logger.warning(e.getMessage());
                 responder.getCommunicator().sendAlertServerMessage(e.getMessage());
             } catch (Exception e) {
@@ -138,12 +121,11 @@ public class BankerHireQuestion extends BankerQuestionExtension {
                              .harray(b -> b.label("Name:").entry("name", (answers == null ? "" : (String)answers.getOrDefault("name", "")), 20))
                              .text("Leave blank for a random name.").italic()
                              .newLine()
-                             .harray(b -> b.label("Face:").entry("face", "", faceMaxChars))
-                             .text("Leave blank to create a face on the next screen, or paste a face code here.").italic()
-                             .newLine()
                              .text("Gender:")
                              .radio("gender", "male", "Male", gender)
                              .radio("gender", "female", "Female", !gender)
+                             .newLine()
+                             .checkbox("customise" ,"Open appearance customiser when done?", true)
                              .newLine()
                              .harray(b -> b.button("Send"))
                              .build();

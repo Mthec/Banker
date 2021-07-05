@@ -6,7 +6,7 @@ import com.wurmonline.server.items.Item;
 import com.wurmonline.server.players.Player;
 import com.wurmonline.shared.util.StringUtilities;
 import mod.wurmunlimited.bml.BMLBuilder;
-import mod.wurmunlimited.npcs.FaceSetter;
+import mod.wurmunlimited.npcs.FaceSetters;
 import mod.wurmunlimited.npcs.banker.BankerMod;
 
 import java.io.IOException;
@@ -51,6 +51,11 @@ public class BankerManageQuestion extends BankerQuestionExtension {
             return;
         }
 
+        if (wasSelected("customise")) {
+            new CreatureCustomiserQuestion(responder, banker, BankerMod.mod.faceSetter, BankerMod.mod.modelSetter, modelOptions).sendQuestion();
+            return;
+        }
+
         String name = getStringProp("name");
         if (name != null && !name.isEmpty()) {
             String fullName = getPrefix() + StringUtilities.raiseFirstLetter(name);
@@ -84,14 +89,14 @@ public class BankerManageQuestion extends BankerQuestionExtension {
 
         if (faceString.isEmpty()) {
             try {
-                responder.getCommunicator().sendCustomizeFace(face, BankerMod.faceSetters.createIdFor(banker, responder));
-            } catch (FaceSetter.TooManyTransactionsException e) {
+                responder.getCommunicator().sendCustomizeFace(face, BankerMod.mod.faceSetter.createIdFor(banker, responder));
+            } catch (FaceSetters.TooManyTransactionsException e) {
                 logger.warning(e.getMessage());
                 responder.getCommunicator().sendAlertServerMessage(e.getMessage());
             }
         } else if (face != banker.getFace()) {
             try {
-                BankerMod.mod.setFaceFor(banker, face);
+                BankerMod.mod.faceSetter.setFaceFor(banker, face);
                 responder.getCommunicator().sendNormalServerMessage("The banker's face seems to shift about and takes a new form.");
             } catch (SQLException e) {
                 logger.warning("Failed to set face (" + face + ") for banker (" + banker.getWurmId() + ").");
@@ -109,7 +114,9 @@ public class BankerManageQuestion extends BankerQuestionExtension {
                              .harray(b -> b.label("Face:").entry("face", Long.toString(banker.getFace()), BankerHireQuestion.faceMaxChars))
                              .text("Blank to create a face on the next screen, or paste a face code here.").italic()
                              .newLine()
-                             .harray(b -> b.button("Send").spacer().button("dismiss", "Dismiss").confirm("Dismiss Banker", "Are you sure you want to dismiss " + banker.getName() + "?"))
+                             .harray(b -> b.button("Send").spacer()
+                                                  .button("customise", "Appearance").spacer()
+                                                  .button("dismiss", "Dismiss").confirm("Dismiss Banker", "Are you sure you want to dismiss " + banker.getName() + "?"))
                              .build();
 
         getResponder().getCommunicator().sendBml(400, 350, true, true, bml, 200, 200, 200, title);

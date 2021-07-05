@@ -1,6 +1,6 @@
 rootProject.name = "Banker"
-include(":BMLBuilder", ":FaceSetter", ":PlaceNpc", ":WurmTestingHelper")
+include(":BMLBuilder", ":CreatureCustomiser", ":PlaceNpc", ":WurmTestingHelper")
 project(":BMLBuilder").projectDir = file("../BMLBuilder")
 project(":PlaceNpc").projectDir = file("../PlaceNpc")
-project(":FaceSetter").projectDir = file("../FaceSetter")
+project(":CreatureCustomiser").projectDir = file("../CreatureCustomiser")
 project(":WurmTestingHelper").projectDir = file("../WurmTestingHelper")
