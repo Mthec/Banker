@@ -7,8 +7,13 @@ import com.wurmonline.server.items.Item;
 import com.wurmonline.server.players.Player;
 import com.wurmonline.server.questions.BankerManageAccountQuestion;
 import mod.wurmunlimited.npcs.banker.BankerTemplate;
-import org.gotti.wurmunlimited.modsupport.actions.*;
+import org.gotti.wurmunlimited.modsupport.actions.ActionEntryBuilder;
+import org.gotti.wurmunlimited.modsupport.actions.ActionPerformer;
+import org.gotti.wurmunlimited.modsupport.actions.ModAction;
+import org.gotti.wurmunlimited.modsupport.actions.ModActions;
 import org.jetbrains.annotations.Nullable;
+
+import java.io.IOException;
 
 public class BankerManageAccount implements ModAction, ActionPerformer {
     private final short actionId;
@@ -30,6 +35,11 @@ public class BankerManageAccount implements ModAction, ActionPerformer {
                 }
             } else {
                 if (performer.getKingdomId() == target.getKingdomId()) {
+                    target.turnTowardsCreature(performer);
+                    try {
+                        target.getStatus().savePosition(target.getWurmId(), false, target.getStatus().getZoneId(), true);
+                    } catch (IOException ignored) {}
+
                     new BankerManageAccountQuestion(performer, target).sendQuestion();
                 } else {
                     performer.getCommunicator().sendNormalServerMessage("The banker seems uncomfortable even standing near someone from another kingdom.");
