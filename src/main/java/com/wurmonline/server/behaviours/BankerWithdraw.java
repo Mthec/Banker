@@ -38,7 +38,7 @@ public class BankerWithdraw implements ModAction, ActionPerformer {
             Bank bank = Banks.getBank(performer.getWurmId());
 
             if (bank != null) {
-                if (performer.getKingdomId() == target.getKingdomId()) {
+                if (BankerActions.canUse(performer, target)) {
                     try {
                         WithdrawMoneyQuestion question = new WithdrawMoneyQuestion(performer, "Withdraw money", "Withdraw selected amount:", bank.getCurrentVillage().getToken().getWurmId());
                         BankerMod.withdrawals.add(question.getId());
@@ -50,8 +50,6 @@ public class BankerWithdraw implements ModAction, ActionPerformer {
                         // See Player.openBank() for precedent.
                         performer.getCommunicator().sendNormalServerMessage(e.getMessage());
                     }
-                } else {
-                    performer.getCommunicator().sendNormalServerMessage("The banker seems uncomfortable even standing near someone from another kingdom.");
                 }
             } else {
                 performer.getCommunicator().sendNormalServerMessage("You do not have a bank account to withdraw from.");
@@ -60,7 +58,7 @@ public class BankerWithdraw implements ModAction, ActionPerformer {
             return true;
         }
 
-        return false;
+        return true;
     }
 
     @Override

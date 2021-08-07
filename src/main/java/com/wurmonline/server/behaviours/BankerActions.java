@@ -7,6 +7,7 @@ import com.wurmonline.server.items.Item;
 import mod.wurmunlimited.npcs.banker.BankerTemplate;
 import org.gotti.wurmunlimited.modsupport.actions.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -70,5 +71,20 @@ public class BankerActions implements ModAction, ActionPerformer, BehaviourProvi
     @Override
     public short getActionId() {
         return actionId;
+    }
+
+    static boolean canUse(Creature performer, Creature target) {
+        if (performer.getPower() < 2 && performer.getKingdomId() != target.getKingdomId()) {
+            performer.getCommunicator().sendNormalServerMessage("The banker seems uncomfortable even standing near someone from another kingdom.");
+            return false;
+        }
+        if (performer.getPower() < 2) {
+            target.turnTowardsCreature(performer);
+            try {
+                target.getStatus().savePosition(target.getWurmId(), false, target.getStatus().getZoneId(), true);
+            } catch (IOException ignored) {}
+        }
+
+        return true;
     }
 }

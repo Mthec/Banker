@@ -55,7 +55,7 @@ public class BankerHire implements ModAction, ActionPerformer, BehaviourProvider
             }
         }
 
-        return false;
+        return true;
     }
 
     @Override

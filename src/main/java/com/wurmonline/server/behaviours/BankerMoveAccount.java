@@ -31,17 +31,15 @@ public class BankerMoveAccount implements ModAction, ActionPerformer {
         if (num == actionId && performer.isPlayer() && BankerTemplate.is(target)) {
             Bank bank = Banks.getBank(performer.getWurmId());
             if (bank != null) {
-                if (performer.getKingdomId() == target.getKingdomId()) {
+                if (BankerActions.canUse(performer, target)) {
                     new BankerManageAccountQuestion(performer, target).sendQuestion();
-                } else {
-                    performer.getCommunicator().sendNormalServerMessage("The banker seems uncomfortable even standing near someone from another kingdom.");
                 }
 
                 return true;
             }
         }
 
-        return false;
+        return true;
     }
 
     @Override

@@ -13,8 +13,6 @@ import org.gotti.wurmunlimited.modsupport.actions.ModAction;
 import org.gotti.wurmunlimited.modsupport.actions.ModActions;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
-
 public class BankerManageAccount implements ModAction, ActionPerformer {
     private final short actionId;
 
@@ -29,27 +27,22 @@ public class BankerManageAccount implements ModAction, ActionPerformer {
         if (performer.isPlayer() && BankerTemplate.is(target)) {
             if (bank != null) {
                 if (!bank.open) {
-                    ((Player)performer).openBank();
+                    if (BankerActions.canUse(performer, target)) {
+                        ((Player)performer).openBank();
+                    }
                 } else {
                     performer.getCommunicator().sendNormalServerMessage("Your bank account is already open.");
                 }
             } else {
-                if (performer.getKingdomId() == target.getKingdomId()) {
-                    target.turnTowardsCreature(performer);
-                    try {
-                        target.getStatus().savePosition(target.getWurmId(), false, target.getStatus().getZoneId(), true);
-                    } catch (IOException ignored) {}
-
+                if (BankerActions.canUse(performer, target)) {
                     new BankerManageAccountQuestion(performer, target).sendQuestion();
-                } else {
-                    performer.getCommunicator().sendNormalServerMessage("The banker seems uncomfortable even standing near someone from another kingdom.");
                 }
             }
 
             return true;
         }
 
-        return false;
+        return true;
     }
 
     @Override
@@ -63,7 +56,7 @@ public class BankerManageAccount implements ModAction, ActionPerformer {
             return action(performer, target, Banks.getBank(performer.getWurmId()));
         }
 
-        return false;
+        return true;
     }
 
     @Override
