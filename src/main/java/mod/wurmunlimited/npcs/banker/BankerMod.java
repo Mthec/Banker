@@ -2,6 +2,7 @@ package mod.wurmunlimited.npcs.banker;
 
 import com.wurmonline.server.Items;
 import com.wurmonline.server.Server;
+import com.wurmonline.server.WurmId;
 import com.wurmonline.server.behaviours.*;
 import com.wurmonline.server.creatures.Communicator;
 import com.wurmonline.server.creatures.Creature;
@@ -34,10 +35,8 @@ import org.gotti.wurmunlimited.modsupport.creatures.ModCreatures;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
+import java.nio.ByteBuffer;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -58,6 +57,7 @@ public class BankerMod implements WurmServerMod, Configurable, Initable, PreInit
     private static long briberyCost = 0;
     private static int contractTemplateId;
     private int contractPrice = MonetaryConstants.COIN_SILVER;
+    public static final Map<Player, Creature> bankOpeners = new HashMap<>();
     private static String namePrefix = "Banker";
 
     public enum VillageOptions {
@@ -201,6 +201,16 @@ public class BankerMod implements WurmServerMod, Configurable, Initable, PreInit
                 "parseWithdrawMoneyQuestion",
                 "(Lcom/wurmonline/server/questions/WithdrawMoneyQuestion;)V",
                 () -> this::withdrawMoney);
+
+        manager.registerHook("com.wurmonline.server.creatures.Communicator",
+                "reallyHandle_CMD_CLOSE_INVENTORY_WINDOW",
+                "(Ljava/nio/ByteBuffer;)V",
+                () -> this::handleCloseInventoryWindow);
+
+        manager.registerHook("com.wurmonline.server.players.Player",
+                "closeBank",
+                "()V",
+                () -> this::closeBank);
 
         FaceSetter.init(manager);
         ModelSetter.init(manager);
@@ -363,5 +373,27 @@ public class BankerMod implements WurmServerMod, Configurable, Initable, PreInit
         }
 
         return 0;
+    }
+
+    Object handleCloseInventoryWindow(Object o, Method method, Object[] args) throws InvocationTargetException, IllegalAccessException {
+        ByteBuffer buf = (ByteBuffer)args[0];
+        buf.mark();
+        long targetId = buf.getLong();
+        if (WurmId.getType(targetId) == 13) {
+            bankOpeners.remove(((Communicator)o).player);
+        }
+
+        buf.reset();
+        return method.invoke(o, args);
+    }
+
+    Object closeBank(Object o, Method method, Object[] args) throws InvocationTargetException, IllegalAccessException {
+        Player player = (Player)o;
+        Creature banker = bankOpeners.remove(player);
+        if (banker == null || !player.isWithinDistanceTo(banker, 12.0f)) {
+            return method.invoke(o, args);
+        }
+
+        return null;
     }
 }

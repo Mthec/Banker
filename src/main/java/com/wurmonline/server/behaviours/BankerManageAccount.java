@@ -6,6 +6,7 @@ import com.wurmonline.server.creatures.Creature;
 import com.wurmonline.server.items.Item;
 import com.wurmonline.server.players.Player;
 import com.wurmonline.server.questions.BankerManageAccountQuestion;
+import mod.wurmunlimited.npcs.banker.BankerMod;
 import mod.wurmunlimited.npcs.banker.BankerTemplate;
 import org.gotti.wurmunlimited.modsupport.actions.ActionEntryBuilder;
 import org.gotti.wurmunlimited.modsupport.actions.ActionPerformer;
@@ -28,6 +29,7 @@ public class BankerManageAccount implements ModAction, ActionPerformer {
             if (bank != null) {
                 if (!bank.open) {
                     if (BankerActions.canUse(performer, target)) {
+                        BankerMod.bankOpeners.put((Player)performer, target);
                         ((Player)performer).openBank();
                     }
                 } else {
