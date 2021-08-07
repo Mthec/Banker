@@ -3,7 +3,7 @@ plugins {
 }
 
 group = "mod.wurmunlimited.npcs.banker"
-version = "0.2.2"
+version = "0.2.3"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 val shortName = "banker"
 val wurmServerFolder = "E:/Steam/steamapps/common/Wurm Unlimited/WurmServerLauncher/"

@@ -11,7 +11,8 @@ import org.junit.jupiter.api.Test;
 import static mod.wurmunlimited.Assert.bmlEqual;
 import static mod.wurmunlimited.Assert.receivedMessageContaining;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 public class BankerManageAccountTests extends BankerTest {
@@ -76,7 +77,7 @@ public class BankerManageAccountTests extends BankerTest {
 
     @Test
     public void actionCorrectActionIdOnly() {
-        assertFalse(manageAccount.action(mock(Action.class), player, banker, (short)(manageAccount.getActionId() + 1), 0));
+        assertTrue(manageAccount.action(mock(Action.class), player, banker, (short)(manageAccount.getActionId() + 1), 0));
 
         FakeCommunicator comm = factory.getCommunicator(player);
         assertEquals(0, comm.getMessages().length);
@@ -86,7 +87,7 @@ public class BankerManageAccountTests extends BankerTest {
     @Test
     public void actionIsPlayerOnly() {
         Creature creature = factory.createNewCreature();
-        assertFalse(manageAccount.action(mock(Action.class), creature, banker, manageAccount.getActionId(), 0));
+        assertTrue(manageAccount.action(mock(Action.class), creature, banker, manageAccount.getActionId(), 0));
 
         FakeCommunicator comm = factory.getCommunicator(creature);
         assertEquals(0, comm.getMessages().length);
@@ -96,7 +97,7 @@ public class BankerManageAccountTests extends BankerTest {
     @Test
     public void actionIsBankerOnly() {
         Creature creature = factory.createNewCreature();
-        assertFalse(manageAccount.action(mock(Action.class), player, creature, manageAccount.getActionId(), 0));
+        assertTrue(manageAccount.action(mock(Action.class), player, creature, manageAccount.getActionId(), 0));
 
         FakeCommunicator comm = factory.getCommunicator(player);
         assertEquals(0, comm.getMessages().length);

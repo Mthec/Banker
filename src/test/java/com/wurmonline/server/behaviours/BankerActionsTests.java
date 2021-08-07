@@ -15,7 +15,8 @@ import java.util.stream.Collectors;
 import static mod.wurmunlimited.Assert.bmlEqual;
 import static mod.wurmunlimited.Assert.receivedMessageContaining;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 public class BankerActionsTests extends BankerTest {
@@ -161,7 +162,7 @@ public class BankerActionsTests extends BankerTest {
 
     @Test
     public void actionCorrectActionIdOnly() {
-        assertFalse(actions.action(mock(Action.class), player, banker, (short)(actions.getActionId() + 1), 0));
+        assertTrue(actions.action(mock(Action.class), player, banker, (short)(actions.getActionId() + 1), 0));
 
         FakeCommunicator comm = factory.getCommunicator(player);
         assertEquals(0, comm.getMessages().length);
@@ -171,7 +172,7 @@ public class BankerActionsTests extends BankerTest {
     @Test
     public void actionIsPlayerOnly() {
         Creature creature = factory.createNewCreature();
-        assertFalse(actions.action(mock(Action.class), creature, banker, actions.getActionId(), 0));
+        assertTrue(actions.action(mock(Action.class), creature, banker, actions.getActionId(), 0));
 
         FakeCommunicator comm = factory.getCommunicator(creature);
         assertEquals(0, comm.getMessages().length);
@@ -181,7 +182,7 @@ public class BankerActionsTests extends BankerTest {
     @Test
     public void actionIsBankerOnly() {
         Creature creature = factory.createNewCreature();
-        assertFalse(actions.action(mock(Action.class), player, creature, actions.getActionId(), 0));
+        assertTrue(actions.action(mock(Action.class), player, creature, actions.getActionId(), 0));
 
         FakeCommunicator comm = factory.getCommunicator(player);
         assertEquals(0, comm.getMessages().length);

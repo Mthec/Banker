@@ -389,8 +389,9 @@ public class BankerMod implements WurmServerMod, Configurable, Initable, PreInit
 
     Object closeBank(Object o, Method method, Object[] args) throws InvocationTargetException, IllegalAccessException {
         Player player = (Player)o;
-        Creature banker = bankOpeners.remove(player);
+        Creature banker = bankOpeners.get(player);
         if (banker == null || !player.isWithinDistanceTo(banker, 12.0f)) {
+            bankOpeners.remove(player);
             return method.invoke(o, args);
         }
 

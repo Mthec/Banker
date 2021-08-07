@@ -1,6 +1,9 @@
 package mod.wurmunlimited.npcs.banker;
 
+import com.wurmonline.server.NoSuchItemException;
+import com.wurmonline.server.WurmId;
 import com.wurmonline.server.banks.Bank;
+import com.wurmonline.server.banks.BankUnavailableException;
 import com.wurmonline.server.creatures.Communicator;
 import com.wurmonline.server.creatures.Creature;
 import com.wurmonline.server.creatures.CreatureTemplate;
@@ -18,14 +21,15 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Properties;
 
 import static mod.wurmunlimited.Assert.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -342,5 +346,108 @@ public class BankerModTests extends BankerTest {
         properties.setProperty("iron", Integer.toString(89));
         assertEquals(123450089, mod.getValueWithdrawn(player, properties));
         assertThat(player, receivedMessageContaining("negative"));
+    }
+
+    @Test
+    public void handleCloseInventoryRemovesEntry() throws InvocationTargetException, IllegalAccessException {
+        BankerMod.bankOpeners.put(player, banker);
+
+        Method method = mock(Method.class);
+        ByteBuffer buffer = mock(ByteBuffer.class);
+        when(buffer.getLong()).thenReturn(WurmId.getNextBankId());
+        Object[] args = new Object[] { buffer };
+
+        mod.handleCloseInventoryWindow(player.getCommunicator(), method, args);
+        assertTrue(BankerMod.bankOpeners.isEmpty());
+        verify(method, times(1)).invoke(player.getCommunicator(), args);
+        verify(buffer, times(1)).reset();
+    }
+
+    @Test
+    public void handleCloseInventoryDoesNotRemoveOtherPlayers() throws InvocationTargetException, IllegalAccessException {
+        BankerMod.bankOpeners.put(factory.createNewPlayer(), banker);
+
+        Method method = mock(Method.class);
+        ByteBuffer buffer = mock(ByteBuffer.class);
+        when(buffer.getLong()).thenReturn(WurmId.getNextBankId());
+        Object[] args = new Object[] { buffer };
+
+        mod.handleCloseInventoryWindow(player.getCommunicator(), method, args);
+        assertTrue(BankerMod.bankOpeners.containsValue(banker));
+        verify(method, times(1)).invoke(player.getCommunicator(), args);
+        verify(buffer, times(1)).reset();
+    }
+
+    @Test
+    public void closeBankButStillInRange() throws InvocationTargetException, IllegalAccessException, NoSuchItemException, BankUnavailableException {
+        Item token = factory.createBankFor(player).getCurrentVillage().getToken();
+        float x = token.getPosX() + 100f;
+        float y = token.getPosY() + 100f;
+        player.getStatus().setPositionXYZ(x, y, 0f);
+        banker.getStatus().setPositionXYZ(x, y, 0f);
+        assert !player.isWithinDistanceTo(token, 12f);
+        assert player.isWithinDistanceTo(banker, 12f);
+
+        BankerMod.bankOpeners.put(player, banker);
+
+        Method method = mock(Method.class);
+        Object[] args = new Object[0];
+
+        mod.closeBank(player, method, args);
+        assertTrue(BankerMod.bankOpeners.containsKey(player));
+        verify(method, never()).invoke(player, args);
+    }
+
+    @Test
+    public void closeBankButOutOfRange() throws InvocationTargetException, IllegalAccessException, NoSuchItemException, BankUnavailableException {
+        Item token = factory.createBankFor(player).getCurrentVillage().getToken();
+        float x = token.getPosX() + 100f;
+        float y = token.getPosY() + 100f;
+        player.getStatus().setPositionXYZ(x, y, 0f);
+        banker.getStatus().setPositionXYZ(x + 100f, y + 100f, 0f);
+        assert !player.isWithinDistanceTo(token, 12f);
+        assert !player.isWithinDistanceTo(banker, 12f);
+
+        BankerMod.bankOpeners.put(player, banker);
+
+        Method method = mock(Method.class);
+        Object[] args = new Object[0];
+
+        mod.closeBank(player, method, args);
+        assertFalse(BankerMod.bankOpeners.containsKey(player));
+        verify(method, times(1)).invoke(player, args);
+    }
+
+    @Test
+    public void closeBankButNotInBankOpeners() throws InvocationTargetException, IllegalAccessException, NoSuchItemException, BankUnavailableException {
+        Item token = factory.createBankFor(player).getCurrentVillage().getToken();
+        assert player.isWithinDistanceTo(token, 12f);
+        assert player.isWithinDistanceTo(banker, 12f);
+
+        Method method = mock(Method.class);
+        Object[] args = new Object[0];
+
+        mod.closeBank(player, method, args);
+        assertFalse(BankerMod.bankOpeners.containsKey(player));
+        verify(method, times(1)).invoke(player, args);
+    }
+
+    @Test
+    public void closeBankButAfterSendCloseWindow() throws InvocationTargetException, IllegalAccessException, NoSuchItemException, BankUnavailableException {
+        Item token = factory.createBankFor(player).getCurrentVillage().getToken();
+        assert player.isWithinDistanceTo(token, 12f);
+        assert player.isWithinDistanceTo(banker, 12f);
+
+        Method method = mock(Method.class);
+        ByteBuffer buffer = mock(ByteBuffer.class);
+        when(buffer.getLong()).thenReturn(WurmId.getNextBankId());
+        Object[] buffArgs = new Object[] { buffer };
+        Object[] args = new Object[0];
+
+        mod.handleCloseInventoryWindow(player.getCommunicator(), method, buffArgs);
+        mod.closeBank(player, method, args);
+        assertFalse(BankerMod.bankOpeners.containsKey(player));
+        verify(method, times(1)).invoke(player.getCommunicator(), buffArgs);
+        verify(method, times(1)).invoke(player, args);
     }
 }

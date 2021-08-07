@@ -14,7 +14,8 @@ import java.util.Properties;
 
 import static mod.wurmunlimited.Assert.bmlEqual;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 public class BankerHireTests extends BankerTest {
@@ -103,14 +104,14 @@ public class BankerHireTests extends BankerTest {
     @Test
     public void testActionNotPlayer() {
         Action action = mock(Action.class);
-        assertFalse(hire.action(action, factory.createNewCreature(), contract, hire.getActionId(), 0));
+        assertTrue(hire.action(action, factory.createNewCreature(), contract, hire.getActionId(), 0));
         assertEquals(0, factory.getCommunicator(player).getBml().length);
     }
 
     @Test
     public void testActionNotContract() {
         Action action = mock(Action.class);
-        assertFalse(hire.action(action, factory.createNewCreature(), factory.createNewItem(), hire.getActionId(), 0));
+        assertTrue(hire.action(action, factory.createNewCreature(), factory.createNewItem(), hire.getActionId(), 0));
         assertEquals(0, factory.getCommunicator(player).getBml().length);
     }
 
@@ -118,7 +119,7 @@ public class BankerHireTests extends BankerTest {
     public void testActionContractNotInPlayerInventory() {
         Action action = mock(Action.class);
         ItemsPackageFactory.removeItem(player, contract);
-        assertFalse(hire.action(action, factory.createNewCreature(), contract, hire.getActionId(), 0));
+        assertTrue(hire.action(action, factory.createNewCreature(), contract, hire.getActionId(), 0));
         assertEquals(0, factory.getCommunicator(player).getBml().length);
     }
 
@@ -126,14 +127,14 @@ public class BankerHireTests extends BankerTest {
     public void testActionAlreadyHired() {
         Action action = mock(Action.class);
         contract.setData(banker.getWurmId());
-        assertFalse(hire.action(action, factory.createNewCreature(), contract, hire.getActionId(), 0));
+        assertTrue(hire.action(action, factory.createNewCreature(), contract, hire.getActionId(), 0));
         assertEquals(0, factory.getCommunicator(player).getBml().length);
     }
 
     @Test
     public void testActionWrongActionId() {
         Action action = mock(Action.class);
-        assertFalse(hire.action(action, factory.createNewCreature(), contract, (short)(hire.getActionId() + 1), 0));
+        assertTrue(hire.action(action, factory.createNewCreature(), contract, (short)(hire.getActionId() + 1), 0));
         assertEquals(0, factory.getCommunicator(player).getBml().length);
     }
 }

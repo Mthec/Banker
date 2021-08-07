@@ -74,6 +74,7 @@ public abstract class BankerTest {
 
         mod.faceSetter = new FaceSetter(BankerTemplate::is, "banker.db");
         mod.modelSetter = new ModelSetter(BankerTemplate::is, "banker.db");
+        BankerMod.bankOpeners.clear();
 
         player = factory.createNewPlayer();
         banker = factory.createNewBanker();

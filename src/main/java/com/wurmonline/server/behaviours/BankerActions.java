@@ -45,9 +45,6 @@ public class BankerActions implements ModAction, ActionPerformer, BehaviourProvi
                 entries.addAll(actions);
             }
 
-            if (entries.isEmpty())
-                logger.warning("No Banker Actions found.");
-
             return entries;
         }
 
@@ -65,7 +62,7 @@ public class BankerActions implements ModAction, ActionPerformer, BehaviourProvi
             return BankerManageAccount.action(performer, target, null);
         }
 
-        return false;
+        return true;
     }
 
     @Override

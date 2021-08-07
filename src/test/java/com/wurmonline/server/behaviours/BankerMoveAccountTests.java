@@ -9,7 +9,8 @@ import org.junit.jupiter.api.Test;
 import static mod.wurmunlimited.Assert.bmlEqual;
 import static mod.wurmunlimited.Assert.receivedMessageContaining;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 public class BankerMoveAccountTests extends BankerTest {
@@ -43,7 +44,7 @@ public class BankerMoveAccountTests extends BankerTest {
 
     @Test
     public void actionNoBank() {
-        assertFalse(move.action(mock(Action.class), player, banker, move.getActionId(), 0));
+        assertTrue(move.action(mock(Action.class), player, banker, move.getActionId(), 0));
 
         FakeCommunicator comm = factory.getCommunicator(player);
         assertEquals(0, comm.getMessages().length);
@@ -67,7 +68,7 @@ public class BankerMoveAccountTests extends BankerTest {
     @Test
     public void actionCorrectActionIdOnly() {
         factory.createBankFor(player);
-        assertFalse(move.action(mock(Action.class), player, banker, (short)(move.getActionId() + 1), 0));
+        assertTrue(move.action(mock(Action.class), player, banker, (short)(move.getActionId() + 1), 0));
 
         FakeCommunicator comm = factory.getCommunicator(player);
         assertEquals(1, comm.getMessages().length);
@@ -78,7 +79,7 @@ public class BankerMoveAccountTests extends BankerTest {
     public void actionIsPlayerOnly() {
         factory.createBankFor(player);
         Creature creature = factory.createNewCreature();
-        assertFalse(move.action(mock(Action.class), creature, banker, move.getActionId(), 0));
+        assertTrue(move.action(mock(Action.class), creature, banker, move.getActionId(), 0));
 
         FakeCommunicator comm = factory.getCommunicator(creature);
         assertEquals(0, comm.getMessages().length);
@@ -89,7 +90,7 @@ public class BankerMoveAccountTests extends BankerTest {
     public void actionIsBankerOnly() {
         factory.createBankFor(player);
         Creature creature = factory.createNewCreature();
-        assertFalse(move.action(mock(Action.class), player, creature, move.getActionId(), 0));
+        assertTrue(move.action(mock(Action.class), player, creature, move.getActionId(), 0));
 
         FakeCommunicator comm = factory.getCommunicator(player);
         assertEquals(1, comm.getMessages().length);
